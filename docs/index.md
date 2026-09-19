@@ -1,19 +1,64 @@
-# CCB-TEAM
+---
+layout: home
 
-CCB-TEAM 组织站点。这里放团队项目的文档与测试记录。
+hero:
+  name: CCB-TEAM
+  text: 组织站点
+  tagline: 团队项目的文档、工具与研究记录
+  actions:
+    - theme: brand
+      text: 浏览全部项目
+      link: /projects/
+    - theme: alt
+      text: 安全 QA 记录
+      link: /security/
 
-## 已有内容
+features:
+  - title: 游戏服务端与客户端
+    details: fyserver（C# / .NET 10）与 kards-server-go（Go / Gin）两套 KARDS 服务端实现，以及端到端验证客户端 FyClient。
+    link: /projects/fyserver
+    linkText: 3 个项目
+  - title: UE .pak 工具箱
+    details: Prism 支持浏览与预览、贴图替换、pak 合并，以及在游戏的 PC 与移动端构建之间移植贴图。
+    link: /projects/prism
+    linkText: 了解 Prism
+  - title: 资产与本地化格式
+    details: AssetRegistry.bin 的解析与语义级回写、UE 5.6 编辑器插件，以及四种格式版本的 .locres 读写。
+    link: /projects/uassetregistry
+    linkText: 了解 UAssetRegistry
+  - title: 蓝图字节码工具
+    details: KismetDecompiler 把蓝图字节码输出为结构化伪代码，KismetReactor 提供图形化查看与就地编辑。
+    link: /projects/kismetdecompiler
+    linkText: 了解 KismetDecompiler
+  - title: 协议逆向
+    details: B64XorDecryption 还原「Base64 + 变长 XOR 密钥」私有协议，附 C 动态库、C# API 与 IDA 伪代码存档。
+    link: /projects/b64xordecryption
+    linkText: 了解编解码方案
+  - title: 安全 QA 记录
+    details: 对 Kards 后台的一轮功能 QA 与安全测试：结论、方法、可复现步骤，以及离线复现的工具链。
+    link: /security/
+    linkText: 查看测试记录
+---
 
-- **[安全 QA](/security/)** —— Kards 后台的功能 QA 与安全测试记录：
-  - [测试方法](/security/methodology)：通道、流程、复现命令、踩过的坑
-  - [上传与目录穿越](/security/upload-and-traversal)：任意文件上传（High）、目录穿越（未成立）及低危问题
-  - [功能缺陷清单](/security/functional-defects)：28 条可复现缺陷与修复建议
-  - [镜像与回放工具](/security/tooling)：站点镜像 + 本地回放服务（含写侧 mock）
+## 快速入口
 
-## 相关仓库
-
-| 仓库 | 说明 |
+| 方向 | 内容 |
 |---|---|
-| [kards-admin-qa](https://github.com/CCB-TEAM/kards-admin-qa) | 上述测试的完整产物：镜像、回放服务源码、测试脚本、证据与报告（私有） |
+| 项目总览 | [全部公开项目](/projects/) —— 按方向分组的完整清单（含自动同步的仓库状态表） |
+| 游戏服务端 | [fyserver](/projects/fyserver) · [kards-server-go](/projects/kards-server-go) · [FyClient](/projects/fyclient) |
+| UE 工具链 | [Prism](/projects/prism) · [UAssetRegistry](/projects/uassetregistry) · [AssetRegistryTool](/projects/assetregistrytool) · [ULocres](/projects/ulocres) · [KismetDecompiler](/projects/kismetdecompiler) · [KismetReactor](/projects/kismetreactor) |
+| 逆向与协议 | [B64XorDecryption](/projects/b64xordecryption) · [上游衍生项目](/projects/upstream) |
+| 测试记录 | [安全 QA](/security/) —— 测试方法、上传与目录穿越、功能缺陷清单、镜像与回放工具 |
+| 本站 | [CCB-Team.github.io](/projects/site) —— VitePress 站点源码与部署流程 |
 
-<!-- 占位首页，后续在此补充更多团队项目与文档 -->
+## 组织仓库
+
+所有公开仓库都在 [github.com/CCB-TEAM](https://github.com/CCB-TEAM)。
+站点内的项目清单由脚本从 GitHub 同步，运行 `npm run sync` 即可更新：
+
+```bash
+npm ci        # 安装依赖
+npm run dev   # 本地预览
+npm run sync  # 刷新项目总览中的公开仓库清单
+npm run build # 构建静态站点到 .vitepress/dist
+```

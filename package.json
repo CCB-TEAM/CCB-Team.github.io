@@ -7,7 +7,8 @@
   "scripts": {
     "dev": "vitepress dev",
     "build": "vitepress build",
-    "preview": "vitepress preview"
+    "preview": "vitepress preview",
+    "sync": "node scripts/sync-projects.mjs"
   },
   "devDependencies": {
     "vitepress": "^1.6.4"
