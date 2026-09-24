@@ -163,8 +163,10 @@ if (!string.IsNullOrEmpty(match.WinnerSide))
     result["match"] = new MatchPollDto(EndMatch, EndMatch, "finished");
 ```
 
-::: warning 客户端需要一个"致死动作"才会播放失败动画
-TS 实现里，判负方会收到一条**服务端伪造的伤害动作**，否则客户端会卡在牌桌上不结算：
+::: warning 旧 JS 实现会补一条"致死动作"——**C# / Go 都不需要**
+先给结论：`fyserver`（C#）与 `kardsservergo`（Go）的结算只做一件事——把双方状态置为 `end_match`、`status` 置为 `finished`。**没有**任何伪造动作。
+
+只有那个已过时的 JS 实现额外插了一条**服务端伪造的伤害动作**：
 
 ```typescript
 if (match.winner_side) {
@@ -179,7 +181,15 @@ if (match.winner_side) {
 }
 ```
 
-`99` 是"致死伤害"，`1`/`41` 是双方 HQ 的 `card_id`。**这是纯客户端需求，别试图用真实规则解释它。**
+`99` 是"致死伤害"，`1`/`41` 是双方 HQ 的 `card_id`——纯客户端演出需求，**不要试图用真实规则解释它**。
+
+**为什么可以不做**：这套"补刀"是早期客户端版本的行为，旧 JS 实现为了适配当时见到的现象加上的。以 C# / Go 为准的现代实现只翻状态即可。
+
+**遇到"胜负不结算"时的排查顺序**：
+
+1. `winner_side` 是否真的写入了（日志确认）；
+2. 轮询返回的 `match.status` 是否为 `finished`、双方 `player_status_*` 是否 `end_match`；
+3. 上面都对仍不结算，**再考虑**按旧 JS 的形状补一条 `DamageCard` 动作——把它当作兼容性补丁，而不是协议要求。
 :::
 
 **战后查询** `GET /matches/v2/{id}/post`：

@@ -99,6 +99,14 @@ export default defineConfig({
             { text: '10 · 部署与兼容性坑', link: '/private-server/10-deploy' },
           ],
         },
+        {
+          text: '附录 · 客户端产物注解',
+          items: [
+            { text: 'A · UHT 结构体与枚举', link: '/private-server/appendix/uht-structs' },
+            { text: 'B · 蓝图反编译注解', link: '/private-server/appendix/decompile-notes' },
+            { text: 'C · 端点与配置解析过程', link: '/private-server/appendix/client-flow' },
+          ],
+        },
       ],
     },
     outline: { level: [2, 3], label: '本页目录' },

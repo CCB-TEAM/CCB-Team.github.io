@@ -4,17 +4,20 @@ title: 自己写私服 · 总览
 
 # 自己写私服
 
-一套**从零实现 Kards 服务端**的系列教程。协议不是猜的，而是从三个可运行的服务端实现里读出来的：
+一套**从零实现 Kards 服务端**的系列教程。协议不是猜的，而是从可运行的服务端实现与客户端产物里读出来的。
+
+**协议依据以 Go 与 C# 两套实现为准**：
 
 | 参考实现 | 语言 / 栈 | 在本系列里的角色 |
 |---|---|---|
-| [`fyserver`](/projects/fyserver) | C# / .NET 10 + ASP.NET Core minimal API | C# 侧范例；单端口 HTTP+WS；自研 codec token |
-| [`kards-server-go`](/projects/kards-server-go) | Go / Gin + GORM + gorilla/websocket | 协议最完整的一版（JWT、卡组码、对局、WS） |
-| `word-server`（NestJS） | TypeScript / NestJS + `ws` + `level` | TS 侧范例；最小的可用骨架 |
+| [`fyserver`](/projects/fyserver) | C# / .NET 10 + ASP.NET Core minimal API | **主参考**：C# 侧范例；单端口 HTTP+WS；codec、对局、调度、结算最完整 |
+| [`kards-server-go`](/projects/kards-server-go) | Go / Gin + GORM + gorilla/websocket | **主参考**：JWT 鉴权、卡组码、对局状态机、WS 与独立端口方案 |
+| 客户端 UHT + 蓝图反编译 | C++ 头文件 + Kismet 字节码 | **字段与行为的权威来源**：见[附录 A](/private-server/appendix/uht-structs) / [附录 B](/private-server/appendix/decompile-notes) |
+| `word-server`（NestJS） | TypeScript / NestJS + `ws` + `level` | ⚠️ **已过时，仅作历史参考**：个别行为（如结算补刀动作）是早期版本的适配，不代表协议要求 |
 
 编解码算法本身的独立逆向成果见 [B64XorDecryption](/projects/b64xordecryption)（C 动态库 + C# API + IDA 伪代码存档），本系列第 4 章是它的教程化版本。
 
-教程里每一段样例代码都给 **TypeScript** 和 **C#** 两个版本（少数只与某一种语言相关的细节会单独标注）。Go 实现只作为**协议依据**引用，不作为教学语言。
+教程里每一段样例代码都给 **TypeScript** 和 **C#** 两个版本——**TypeScript 只是教学语言，不作为协议依据**；凡与 Go / C# 实现冲突之处，一律以后者为准。
 
 ::: warning 用途与免责
 本系列仅用于**协议研究与学习**。文中所有接口、字段、常量均来自对第三方实现的阅读与抓包验证，与 1939 Games 无关，也不是官方协议文档。请勿用于商业用途或任何侵权场景；相关参考实现本身即声明为非盈利、禁止商用。生产环境请勿复用文中的默认密钥与口令。
@@ -101,3 +104,11 @@ nest new mykards      # 或 npm init -y && npm i express ws
 8. [对局动作、调度与结算](/private-server/08-match-actions) —— actions 轮询/提交、mulligan、胜负
 9. [WebSocket 实时通道](/private-server/09-websocket) —— 四个 channel 与帧格式
 10. [部署与兼容性坑](/private-server/10-deploy) —— 反代、IP 重定向、字段顺序陷阱
+
+## 附录（客户端产物注解）
+
+正文讲"服务端要返回什么"，附录讲"客户端为什么这么要"——全部来自游戏包的 UHT 头文件与蓝图反编译：
+
+- [附录 A · UHT 结构体与枚举注解](/private-server/appendix/uht-structs) —— `endpoints` / `FMatch2` / `FCardData` / `FJwtPayload` 等客户端结构体逐字段注解；`EFactionEnum` 就是卡组码国家位、`ECardLocationEnum` 就是 `location` 字符串
+- [附录 B · 蓝图反编译注解](/private-server/appendix/decompile-notes) —— `server_options` 的 25 个配置键与默认值、**版本闸门** `Is Client Version OK`、dev/live 从 `endpoints.root` 推导、五国等级与阵营颜色表
+- [附录 C · 客户端如何解析端点与配置](/private-server/appendix/client-flow) —— 从硬编码基址到进对局的完整链路时序，以及"哪些是实测、哪些是推断"

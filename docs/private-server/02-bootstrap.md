@@ -48,12 +48,19 @@ title: 02 · 引导接口与最小服务
 
 ::: warning `current_user` 里两个反直觉的点
 
-1. **`exp` 填的是用户 ID 字符串**，不是时间戳。客户端在这个字段上做了非常规处理（"Kards 要求此处填 ID"）。
-2. **`iat` 填的是服务端 token 自己的 `exp`**，而且客户端会校验
-   `abs(客户端 token.exp - 服务端 token.exp) < 86400`。
-   两次签发相差超过 24 小时，客户端会认为身份不一致。
+1. **`exp` 填的是用户 ID 字符串**，不是时间戳。原因在客户端的结构体里：`FJwtPayload.exp` 是 `int32`（见[附录 A](/private-server/appendix/uht-structs)），Go 实现干脆把 ID 塞了进去。
+2. **`iat` 填的是服务端 token 自己的 `exp`**。这是 Go 实现 `GetRoot` 里的做法，它同时还会做一次一致性检查：
 
-结论：`current_user` 不是标准的 JWT payload，**别用通用 JWT 库直接序列化**，手工拼 JSON 最稳。
+   ```go
+   // internal/handlers/root.go（Go 服务端自身的校验，不是客户端行为）
+   expC := claimsClient["exp"].(float64)   // 请求方 token 的 exp
+   expS := claimsServer["exp"].(float64)   // 库里存的 PlayerJWT 的 exp
+   if math.Abs(expC-expS) < 86400 { … }    // 相差 24h 内才填充 current_user
+   ```
+
+   作用是"只认自己最近签发的那张 token"，防止用过期的旧 token 拿到 `current_user`。
+
+结论：`current_user` 不是标准的 JWT payload（字段是 `int32`、语义也偏），**别用通用 JWT 库直接序列化**，手工拼 JSON 最稳。
 :::
 
 ## `/.com/config`：另一个引导口

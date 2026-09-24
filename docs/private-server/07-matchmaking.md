@@ -22,13 +22,13 @@ title: 07 · 大厅、匹配与开局
 | `"brawl"` / `"draft"` / `"pw"` / `"training"` | 各成一体 | 乱斗、竞技场、训练 |
 | `"battle_code:XXXX"` | 私密房 | **按 `extra_data` 分桶**，同一个 code 的两人配对 |
 
-实现就是"两个坑位一凑即成对"：
+实现就是"两个坑位一凑即成对"（`extra_data` 为空进主队列，非空进第二队列，`battle_code:` 前缀单独分桶）：
 
 ```typescript
-// TS：两类队列 + 按 code 分桶
+// TypeScript 写法示意（队列语义以 C# / Go 实现为准）
 async joinMatch(lobbyPlayer: LobbyPlayer) {
   const user = JSON.parse(await users.get('' + lobbyPlayer.player_id));
-  if (user.name === '<anon>') {                        // ← 没改名的玩家不让进
+  if (user.name === '<anon>') {                        // ← 没改名的玩家不让进（fyserver 亦有此拦截）
     clients[user.id]?.client.send(JSON.stringify({ channel: 'disconnect', message: '请改名' }));
     return;
   }
@@ -94,6 +94,7 @@ finally { _matchInitLock.Release(); }
 客户端排队时高频轮询这个接口，直到拿到开局数据：
 
 ```typescript
+// 语义以 fyserver（C#）为准，这里是 TypeScript 等价写法
 async checkMatch(playerId: number) {
   const match = Object.values(MatchService.matchedPairs)
     .find((m) => !m.winner_side && m.hasPlayer(playerId));
@@ -103,7 +104,14 @@ async checkMatch(playerId: number) {
 ```
 
 ::: warning `null` 是字符串
-没匹配到时响应体是 **`null` 这 4 个 ASCII 字符**（TS 版 `return "null"`），不是 `null` 字面量、不是 `{}`。C#/Go 实现同理。写成 JSON `null` 客户端会解析失败。
+没匹配到时响应体是 **`null` 这 4 个 ASCII 字符**。`fyserver` 的写法最直白：
+
+```csharp
+var match = matches.GetActiveMatchForUser(user.Id);
+if (match == null) return Results.Text("null");    // ← 纯文本，不是 JSON null
+```
+
+写成 JSON `null` 或 `{}` 客户端会解析失败。
 :::
 
 匹配到之后，`GET /matches/v2/{id}` 只是保活，返回 `"running"` 字符串即可。
