@@ -12,6 +12,7 @@ export default defineConfig({
       { text: '首页', link: '/' },
       { text: '项目', link: '/projects/', activeMatch: '^/projects/' },
       { text: '安全 QA', link: '/security/', activeMatch: '^/security/' },
+      { text: '自己写私服', link: '/private-server/', activeMatch: '^/private-server/' },
     ],
     sidebar: {
       '/projects/': [
@@ -64,6 +65,39 @@ export default defineConfig({
         {
           text: '相关',
           items: [{ text: '项目总览', link: '/projects/' }],
+        },
+      ],
+      '/private-server/': [
+        {
+          text: '自己写私服',
+          items: [
+            { text: '总览', link: '/private-server/' },
+            { text: '01 · 协议是怎么知道的', link: '/private-server/01-discovery' },
+            { text: '02 · 引导接口与最小服务', link: '/private-server/02-bootstrap' },
+            { text: '03 · 登录与会话', link: '/private-server/03-session' },
+            { text: '04 · 消息编解码 codec', link: '/private-server/04-codec' },
+          ],
+        },
+        {
+          text: '玩家与卡组',
+          items: [
+            { text: '05 · 玩家数据、物品与图书馆', link: '/private-server/05-player-data' },
+            { text: '06 · 卡组与卡组码', link: '/private-server/06-decks' },
+          ],
+        },
+        {
+          text: '对战',
+          items: [
+            { text: '07 · 大厅、匹配与开局', link: '/private-server/07-matchmaking' },
+            { text: '08 · 对局动作、调度与结算', link: '/private-server/08-match-actions' },
+            { text: '09 · WebSocket 实时通道', link: '/private-server/09-websocket' },
+          ],
+        },
+        {
+          text: '运维',
+          items: [
+            { text: '10 · 部署与兼容性坑', link: '/private-server/10-deploy' },
+          ],
         },
       ],
     },
