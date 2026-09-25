@@ -105,7 +105,7 @@ nest new mykards      # 或 npm init -y && npm i express ws
 9. [WebSocket 实时通道](/private-server/09-websocket) —— 四个 channel 与帧格式
 10. [部署与兼容性坑](/private-server/10-deploy) —— 反代、IP 重定向、字段顺序陷阱
 
-## 附录（客户端产物注解）
+## 附录（产物注解、自检与复现）
 
 正文讲"服务端要返回什么"，附录讲"客户端为什么这么要"——全部来自游戏包的 UHT 头文件与蓝图反编译：
 
@@ -113,3 +113,4 @@ nest new mykards      # 或 npm init -y && npm i express ws
 - [附录 B · 蓝图反编译注解](/private-server/appendix/decompile-notes) —— `server_options` 的 25 个配置键与默认值、**版本闸门** `Is Client Version OK`、dev/live 从 `endpoints.root` 推导、五国等级与阵营颜色表
 - [附录 C · 客户端如何解析端点与配置](/private-server/appendix/client-flow) —— 从硬编码基址到进对局的完整链路时序，以及"哪些是实测、哪些是推断"
 - [附录 D · 自检脚本与常量速查](/private-server/appendix/smoke-test) —— 常量速查表 + 可复制的 PowerShell 冒烟脚本（10 步逐步 `✓`/`✗` 并指向对应章节）
+- [附录 E · 复现指南与待验证清单](/private-server/appendix/open-questions) —— 四条取证路径与复现步骤，以及 **10 项尚未验证的推断**（每项附一分钟验证法）
