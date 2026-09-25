@@ -10,23 +10,27 @@ title: 05 · 玩家数据、物品与图书馆
 
 返回全量卡牌清单。客户端据此渲染收藏、判断"你有几张"、以及在卡组编辑器里校验卡组码。
 
+官服实测的响应是一个**裸数组**（没有 `{ "cards": … }` 外壳），每条以 `card_type` 为主键：
+
 ```jsonc
-// GET /players/{id}/library
-{
-  "cards": [
-    { "card_type": "card_unit_1st_infantry", "count": 40, "gold_card_count": 0, "id": 1024, "recently_crafted_count": 0 }
-  ],
-  "new_cards": []
-}
+// GET /players/{id}/library   → 顶层就是数组
+[
+  { "card_type": "card_unit_1st_infantry", "count": 40, "gold_card_count": 0,
+    "player_id": 1, "recently_crafted_count": 0 }
+]
 ```
 
 | 字段 | 含义 |
 |---|---|
-| `card_type` | 卡牌资产名（`card_unit_*` / `card_event_*`） |
+| `card_type` | 卡牌资产名（`card_unit_*` / `card_event_*`）——**条目主键** |
 | `count` | 普通卡数量（**40 就是"全都有"**，参考实现统一给 40） |
 | `gold_card_count` | 金卡数量 |
-| `id` | **卡牌数字 ID**——就是卡组码里那两个字符解码出的值，必须和卡组码表一致 |
+| `player_id` | 该行归属的玩家 |
 | `recently_crafted_count` | 近期合成数（用于 UI 高亮，可全 0） |
+
+::: warning 官服没有数字 `id` 字段
+早期版本的本文曾给出带 `"id": 1024` 的示例，那是**误读**：官服响应里只有 `card_type` 资产名，卡牌的数字编码只存在于**客户端内置**的卡组码映射表里（见下）。自建服务发 `{ "cards": [ … ] }` 外壳或多余字段客户端通常也能忍，但**以裸数组 + `card_type` 为准**——实测依据见[附录 F](/private-server/appendix/live-probe)。
+:::
 
 ::: warning `id` 必须和卡组码表对得上
 这是最容易出错的地方：库里 `id` 与客户端内置的卡牌表不一致，卡组编辑器会显示"未知卡牌"，甚至直接崩。**采集方式**：从客户端导出 `deckCodeIDsTable`（`fyserver` 用的是 `library/deckCodeIDsTable2.json`，TS 版直接内联成 `src/library.ts`，Go 版用 `//go:embed` 塞进二进制），它是 `{deck_code_id, card, ID}` 的数组：
@@ -35,7 +39,7 @@ title: 05 · 玩家数据、物品与图书馆
 [ { "deck_code_id": "1a", "card": "card_unit_1st_infantry", "ID": 1024 }, … ]
 ```
 
-两个接口名都要实现，老版本客户端请求 `librarynew`：
+两个接口名都实现更稳（老版本客户端会请求 `librarynew`）。但要注意：**官服上并不存在 `/librarynew`**（实测 404），它只是参考实现为旧客户端准备的兼容别名：
 
 ::: code-group
 

@@ -40,7 +40,7 @@ mitmproxy -p 8080        # 或 mitmweb
 | 观察点 | 为什么重要 |
 |---|---|
 | `Authorization: JWT <token>` | 前缀是 `JWT `，不是 `Bearer `；两个都兼容的写法更稳 |
-| `Content-Type` 是否带 `charset` | 客户端对 `application/json; charset=utf-8` 不友好（第 2 章） |
+| `Content-Type` 是否带 `charset` | 官服自己就不统一：`/config` 带 `charset=utf-8`，`/` 与 `/session` 不带 → **客户端能接受 charset**（[附录 F](/private-server/appendix/live-probe) 实测） |
 | 字段名的大小写 | 线上是 `status`，UHT 里是 `Status`，说明匹配是宽容的 |
 | 未匹配时的响应体 | 是字符串 `null` 而不是 JSON `null`——这一条最容易在抓包里看出来 |
 
@@ -97,18 +97,22 @@ KismetDecompiler --input  <蓝图导出目录> \
 
 下面这些点，本系列**已经明确标注为推断或未定**。它们不是"待办"，而是诚实的边界——把边界写出来，比假装全都清楚更有用。
 
+::: tip 大部分已在 2026-09-25 用官服实测回答
+其中 1、2、3、5、6、7、9 已被[附录 F · 官服实测对照](/private-server/appendix/live-probe)确认（含两处**纠正**：library 的主键是 `card_type` 而非 `id`/`deck_id`；请求 `provider` 是 `device_id` 而 claim 才是 `device`）。仅 4、8、10 仍需对局抓包或走商店链路。
+:::
+
 | # | 问题 | 目前掌握 | 一分钟验证法 |
 |---|---|---|---|
-| 1 | `endpoints` 的值必须是绝对地址吗？ | 推断是（三个实现都下发绝对地址，且蓝图产物中 `backend_endpoints` 零命中） | 把某个 endpoint 改成相对路径，看客户端请求落到哪个 host |
-| 2 | `root_url` 拆 `.` 取的是第几段？ | 反编译产物里该下标渲染为 `<ArrayIndex>`，未解析；行为上 `kards.dev.*` → dev、`kards.live.*` → live | 用 `http://a.dev.b.c:5231` 与 `http://a.b.dev.c:5231` 两种域名各试一次，看版本闸门行为 |
-| 3 | `FLibraryCard` 的字段名到底是 `id` 还是 `deck_id`？ | UHT 里是 `deck_id`，实现里发 `id`，两者都能进游戏 | 抓一次 `/players/{id}/library`，或把字段改成 `deck_id` 看收藏界面是否仍正常 |
-| 4 | `action_data` 的确切形状 | UHT 说是 `TArray<FActionValue2>`（每项 `Name`/`Value`/`Text`），实现却发键值对象 | 用一个动作分别按两种形状提交，看客户端是否都认 |
-| 5 | 客户端是否校验 JWT 签名？ | 推断不校验（实现都是手工拼 payload，`exp` 甚至填的是用户 ID） | 用一个签名错误的 token 请求受保护接口，看是否 401 之外还报别的错 |
-| 6 | `versions` 前缀匹配的左边到底取哪一项？ | 已知 `StartsWith(客户端版本, 服务端串)`，但客户端版本是 `GetProjectVersion()` 的哪个形态未确认 | 把 `versions` 设为 `["Kards"]`（极短前缀）与 `["Kards 9.99"]`，观察准入结果 |
-| 7 | 三种时间格式是否各字段专用？ | 已知至少三种格式并存（`server_time` 点分、卡组 ISO 6 位小数、items 空格分隔），但是否可互换未验证 | 把 `server_time` 换成 ISO 格式，看客户端是否还能解析 |
-| 8 | `xserver_closed` 非空时的具体表现 | 已知非空即触发关服提示，`xserver_closed_header` 是文案 | 填一个非空值跑一次，记录弹窗样式与是否仍可进游戏 |
-| 9 | 登录 `provider: "device"` 是否等价 `CT_Device`？ | 推断是（枚举第一项），但未见服务端按此分支 | 换一个 provider 值，看客户端是否要求额外的凭据字段 |
-| 10 | `EKardsProvider` 与登录 `provider` 的关系 | 确认**不是**同一个东西：前者是支付渠道（Xsolla/Steam/…） | 抓 `provider_details.payment_provider` 的取值范围 |
+| 1 | ✅ **已确认：是绝对地址** | 官服 `GET /` 的 `endpoints.*` 与 `/session` 的 `*_url` 全部是含 host 的绝对 URL | 见 [附录 F](/private-server/appendix/live-probe) |
+| 2 | ✅ **已确认：取第二段** | 官服 `root` = `https://kards.live.1939api.com`，点分第二段正是 `live` | 见 [附录 F](/private-server/appendix/live-probe) |
+| 3 | ✅ **已确认：两者都不是，是 `card_type`** | 官服 library 是**裸数组**，主键是资产名 `card_type`，另有 `count` / `gold_card_count` / `player_id` / `recently_crafted_count`，**没有 `id` 也没有 `deck_id`** | 见 [附录 F](/private-server/appendix/live-probe) |
+| 4 | `action_data` 的确切形状 | 官服只读接口不涉及，仍需抓**对局中**的包 | 用一个动作分别按两种形状提交，看客户端是否都认 |
+| 5 | **基本确认：不校验签名** | 官服 token 用 **RS256**；私服手搓的 HS256/无签名令牌能用，说明客户端不验签。另：claim 里 `provider` 是 `device`，**请求里才是 `device_id`** | 见 [附录 F](/private-server/appendix/live-probe) |
+| 6 | ✅ **已确认：取客户端项目版本** | 官服 `versions = ["Kards 1.60"]`，而登录 DTO 的 `version` 是 `Kards 1.48.24871.launcher`，该组合**登录成功** → 闸门比的不是 DTO 的 `version` 字段 | 见 [附录 F](/private-server/appendix/live-probe) |
+| 7 | ✅ **已确认：同一份响应内就混用** | 一份 `/session` 里 `server_time` 点分、`last_logon_date` ISO+6 位、`new_player_login_reward.reset` 空格分隔；且 `GET /` 的 `server_time` 是 ISO——**同名键在两条接口格式不同** | 见 [附录 F](/private-server/appendix/live-probe) |
+| 8 | **部分确认：不拦登录** | 探测时官服 `xserver_closed` 非空而 `/session` 仍返回 200 → 维护提示是客户端侧展示逻辑 | 弹窗样式仍需客户端实测 |
+| 9 | ✅ **已确认：请求 `device_id`，claim `device`** | `provider: "device"` 会被官服拒为 `Unknown provider`；`/session` 必填字段只有 `provider` + `provider_details` | 见 [附录 F](/private-server/appendix/live-probe) |
+| 10 | `EKardsProvider` 与登录 `provider` 的关系 | 确认**不是**同一件事；官服 `provider_details.payment_provider` 实测为 `XSOLLA`，完整取值集合需走商店链路 | 抓 `provider_details.payment_provider` 的取值范围 |
 
 ::: tip 为什么要专门列一张"不知道"的表
 协议逆向里最危险的不是"没搞懂"，而是**把推测当事实写进代码**——这类错误会在很久之后以一个毫不相关的形式暴露出来。把不确定项集中列出，至少保证：读者知道哪里要自己验，以及怎么验。

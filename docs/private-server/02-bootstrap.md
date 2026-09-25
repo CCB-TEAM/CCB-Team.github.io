@@ -221,7 +221,11 @@ export const formatServerTime = (d: Date) =>
 
 写中间件时注意顺序：**必须在 `UseRouting()`/路由注册前生效**，否则已经匹配失败了再改写没用。
 
-**2. `Content-Type` 不能带 `charset`。** 客户端解析对 `application/json; charset=utf-8` 不友好。各有一招：
+**2. `Content-Type` 带不带 `charset` 其实无所谓（此处已修正）。** 早期版本说"客户端对 `application/json; charset=utf-8` 不友好"，**官服实测推翻了这个说法**：官服 `/config` 返回的正是 `application/json; charset=utf-8`，而客户端要能显示维护公告就必须解析得动它——所以**客户端能接受 charset**。去掉它无害，但并非客户端要求，不必为此专门写中间件。下面的写法如果你只是想把响应头统一干净，仍可选用：
+
+::: tip 客户端还会带两个 API Key 头
+官服要求请求携带 `Drift-Api-Key` 与 `X-Api-Key`（值形如 `<app-key>:<客户端版本串>`）。**自建服务可以完全忽略它们**，但要模拟官服行为、或做抓包比对时，得知道客户端一定会发这两个头。详见[附录 F](/private-server/appendix/live-probe)。
+:::
 
 ::: code-group
 

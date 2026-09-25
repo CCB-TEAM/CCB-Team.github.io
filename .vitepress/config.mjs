@@ -112,13 +112,14 @@ export default defineConfig({
           ],
         },
         {
-          text: '附录 · 注解、自检与复现',
+          text: '附录 · 注解、自检、复现与实测',
           items: [
             { text: 'A · UHT 结构体与枚举', link: '/private-server/appendix/uht-structs' },
             { text: 'B · 蓝图反编译注解', link: '/private-server/appendix/decompile-notes' },
             { text: 'C · 端点与配置解析过程', link: '/private-server/appendix/client-flow' },
             { text: 'D · 自检脚本与常量速查', link: '/private-server/appendix/smoke-test' },
             { text: 'E · 复现指南与待验证清单', link: '/private-server/appendix/open-questions' },
+            { text: 'F · 官服实测对照', link: '/private-server/appendix/live-probe' },
           ],
         },
       ],
