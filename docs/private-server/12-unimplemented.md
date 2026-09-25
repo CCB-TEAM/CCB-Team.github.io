@@ -133,6 +133,41 @@ struct FDMission { int32 ID; FString mission_id; int32 counter; int32 Slot; bool
 | `POST /email/set` | 改邮箱，涉及验证流程，未实测 |
 | `GET /store/txn`（transactions） | 返回一组**计数器聚合**（`gold` / `diamonds` / `packs` / `campaigns` / `decks` / `equipment` …），与 `/session` 的顶层货币字段是两套表达 |
 
+### 客户端真的会调的 404（真机抓包实测）
+
+上面两节是"官服有什么"，这一节是"**客户端会来要什么**"——来自一份真实客户端打到自建私服的抓包（[附录 H](/private-server/appendix/client-capture)）。这些请求客户端每次启动/进局都会发，实测那台私服全回 404：
+
+| 客户端调用 | 私服响应 | 说明 |
+|---|---|---|
+| `GET /players/{id}/achievements` | 404 | 启动即调 |
+| `GET /players/{id}/dailymissions` | 404 | 启动即调 |
+| `GET /players/{id}/packs` | 404 | 启动即调 |
+| `GET /store/txn/dlc` | 404 | **新端点**：DLC 交易查询（与 `GET /store/txn` 不是一回事） |
+| `PUT /players/{codec 玩家标识}` | 404 ×2 | **新端点**：玩家级会话动作通道，见下 |
+
+::: tip 404 不致命，但会少东西
+客户端对这些 404 **不报错、照常进局**——所以两套参考实现"没做"也能用。但要做"看起来完整"的服务端，至少给 200 + 空结构（写法见第六节）。
+
+另外注意 `GET /store/txn/dlc` 与 `GET /store/txn` **是两个端点**，别用同一个 handler 糊过去（形态不同）。
+:::
+
+### 玩家级会话动作通道 `PUT /players/{codec}`
+
+本系列此前没有记录过这个端点：
+
+```http
+PUT /players/<一个 codec 包>
+Content-Type: application/json
+
+{ "action": "accept-eula", "value": "accepted" }
+```
+
+- **玩家标识编码在 URL 路径里**（解码后是客户端的 `external_id`，形如 `device:Android-…`），body 是**裸 JSON**（不套 `{a:…}` 信封）；
+- 已知 `action`：`accept-eula`（同意用户协议）、`log-player-event`（遥测，`value` 形如 `事件名;JSON`）；
+- 路径里那个 codec 包用[第 4 章](/private-server/04-codec)的方法能直接解出来（表索引 48），**不依赖 JWT 里的 id**。
+
+实测私服 404 这两个调用后客户端行为完全不变，所以优先级低；但它是"客户端会发什么"的一份实证，值得知道。
+
 ## 四、容器形态：必须实测的三类
 
 这是"不同端点不同格式"最容易翻车的地方，实测归类如下：

@@ -119,3 +119,4 @@ nest new mykards      # 或 npm init -y && npm i express ws
 - [附录 E · 复现指南与待验证清单](/private-server/appendix/open-questions) —— 四条取证路径与复现步骤，以及 **10 项尚未验证的推断**（每项附一分钟验证法）
 - [附录 F · 官服实测对照](/private-server/appendix/live-probe) —— 直接调用 `kards.live.1939api.com` 的实测结果：API Key 前置头、真实登录 DTO（`provider: "device_id"`）、`/session` 的 70 个扁平字段、**150 键 `server_options` 全清单**、RS256 令牌 claim、library 与卡组码真实形态，以及**六处对既有说法的纠正**
 - [附录 G · 端点矩阵与数据复用](/private-server/appendix/endpoint-matrix) —— 22 个端点的方法/形态/元素字段一张表；**哪些结构被复用**（会话内联的卡组、赛事、`current_user` = JWT claim）；六个"同名不同形"的键；空响应的三种写法（`[]` / `null` / 空体）
+- [附录 H · 真实客户端抓包实录](/private-server/appendix/client-capture) —— 真客户端打到自建私服的 28 条记录：真实 `/session` DTO、建卡组与 `fill`、换牌请求里**整局 82 张牌面**、结束回合的 `match_data` 快照、两条会话动作通道（含**编码在 URL 路径里的玩家级通道**）、私服的 404 清单，以及 ping/pong 心跳帧

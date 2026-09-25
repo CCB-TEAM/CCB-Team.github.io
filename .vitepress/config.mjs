@@ -134,6 +134,7 @@ export default defineConfig({
             { text: 'E · 复现指南与待验证清单', link: '/private-server/appendix/open-questions' },
             { text: 'F · 官服实测对照', link: '/private-server/appendix/live-probe' },
             { text: 'G · 端点矩阵与数据复用', link: '/private-server/appendix/endpoint-matrix' },
+            { text: 'H · 真实客户端抓包实录', link: '/private-server/appendix/client-capture' },
           ],
         },
       ],

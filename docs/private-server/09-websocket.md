@@ -83,6 +83,28 @@ Go 的 upgrader 声明了 `Subprotocols: []string{"ws"}`。客户端请求 `Sec-
 
 `timestamp` 格式是 `2006-01-02T15:04:05.000Z`（3 位毫秒）。`sender`/`receiver` 是**数字**玩家 id，但 `receiver` 兼容字符串（Go 实现两种都收）。
 
+::: tip 真机抓包的 ping/pong 长这样（实测）
+一份真实客户端（Android 构建）打到自建私服的抓包里有 4 条 WS 消息，两问两答：
+
+```jsonc
+// client → server
+{ "sender": "", "timestamp": "", "receiver": "", "channel": "ping",
+  "message": "ping", "context": "", "match_id": "<match_id>" }
+
+// server → client
+{ "timestamp": "1790320130002", "context": "", "message": "pong",
+  "channel": "ping", "sender": "<player_id>", "receiver": "", "match_id": null }
+```
+
+三点值得注意：
+
+1. **客户端发的 `timestamp` 是空字符串**，而且它接受了 **Unix 毫秒字符串**形式的 pong —— 说明**客户端不校验 `timestamp` 格式**（至少这个构建不校验）。上面那句 ISO 格式来自参考实现，两种都能用；
+2. **对局中客户端会在心跳里带 `match_id`**（不在局中则不带）。服务端可以用它核对"这人还在不在那局里"，离线判定（`idel_disconnect_minutes`）靠的就是这个；
+3. 心跳间隔实测约 **20 秒**，服务端必须回 pong，否则会被判离线。
+
+完整调用序列见[附录 H](/private-server/appendix/client-capture)第九节。
+:::
+
 ## 四个 channel
 
 | channel | 方向 | 行为 |

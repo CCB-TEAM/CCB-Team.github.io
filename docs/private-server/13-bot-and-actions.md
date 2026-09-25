@@ -9,7 +9,7 @@ title: 13 · 人机对局与对局内协议
 ::: tip 三条一句话结论
 1. `actions` 数组里装的**不是 JSON 对象，而是 codec 编码串**（第 4 章那套），每条解码后是一个 action。
 2. **`location_number` 是"牌序位"**——发牌时手牌 `0..N-1`、牌库紧接 `N..38`；换牌后服务端会给牌库**重新编号**。
-3. 玩法动作的**提交**没能纯 HTTP 复现（官服一律回 `400 ACTION_ERROR`）——第九节把试过的东西全列出来了，这本身也是个有用的结论。
+3. 玩法动作的**提交格式**已由一份真实客户端抓包解开（第九节）：外层 `{a: 包}` 是对的，包内除 `action_type` / `action_data` 外**还必须有 `local_subactions`**——这正是早期尝试被 `400 ACTION_ERROR` 拒掉的原因。
 :::
 
 ## 一、进入人机：`POST /singleplayerlobby`
@@ -220,6 +220,28 @@ replacement_cards:  24@hand_left:0   22@hand_left:1                     ← 新�
 
 第 6 步值得单独说：`GET /matches/v2/{id}` 的响应是**一个裸字符串**（`running` / `finished` 之类），它同时充当"我这边的关卡载入完了"的信号。参考实现里这个接口正是把 `lvl_loaded_left` 置 1、双方都置 1 就转 `running`——**与官服行为一致**。
 
+### 真实一局的动作流（抓包解码，逐条）
+
+一份真实客户端打完整局的抓包，把一局的骨架完整暴露出来了：
+
+| aid | 提交方 | `action_type` | `player_id` | `turn_number` | `action_data` |
+|---|---|---|---|---|---|
+| 1 | 我方 | `XStartOfGame` | 我方 | `0` | `{"playerID": <我方 id>}` |
+| 2 | 我方 | `XActionStartOfTurn` | 我方 | `1` | `{"side":"left","56":"20"}` |
+| 3 | 我方 | `XActionEndOfTurn` | 我方 | `1` | `{"side":"left","reason":"endTurnButton","56":"20"}` |
+| 4 | 机器人 | `XActionStartOfTurn` | 机器人 | `2` | `{"side":"right","75":"20"}` |
+| 5 | 机器人 | `XActionEndOfTurn` | 机器人 | `2` | `{"side":"right","75":"20"}` |
+| 6 | 机器人 | `ActionEndMatch` | 我方 | `2` | `{"reason":"surrender","winner_side":"right"}` |
+| 7 | — | `XActionStartOfTurn` | 我方 | `3` | `{"side":"left","56":"20"}` |
+
+几个可复用的规律：
+
+- **`turn_number` 从 0 起**：`XStartOfGame` 是 turn 0，之后每个"开始/结束回合"占一个 turn；
+- **`ActionEndMatch` 的 `player_id` 是"发起结束的人"**（本局我方投降），但它的 `action_data` 里写的是 `winner_side`（机器人一侧）；
+- 机器人那两条的 `action_data` **没有 `reason`**，玩家的结束回合有 `reason: "endTurnButton"`——两种都能被客户端接受；
+- 机器人的 `side` 是 `right`、数值键是 **`"75"`**；我方是 `left` + **`"56"`**（见第九节的解释）；
+- aid 7 是**对局已经 `finished` 之后**又多出来的一条"开始回合"（服务端的定时器没停）——客户端照样收了，没出问题，但实现时该在终局后停掉 AI 定时器。
+
 ## 六、actions 轮询与滑动窗口
 
 ```jsonc
@@ -246,7 +268,25 @@ PUT /matches/v2/{id}/actions
 
 抓包里客户端用 `min_action_id: 3` 轮询，返回的正好是 `action_id: 3` 那一条（解码后确认）——**id ≥ min 的全部返回，边界包含在内**。所以客户端每次把"已处理到的最大 id"发上来即可，不需要 +1。
 
-响应里的 `actions` 是从旧到新排列的**增量切片**，客户端按序解码应用。至于**服务端到底保留多少条历史**（窗口上限、是否截断），需要一局有大量动作的真实对局才能测出来——本次因为动作提交未打通（第九节），**没测出窗口大小**，如实标出。
+响应里的 `actions` 是从旧到新排列的**增量切片**，客户端按序解码应用。
+
+**窗口实测**（真客户端 + 私服，一局完整的抓包）：
+
+| 轮询 | 返回 |
+|---|---|
+| `min_action_id: 1`（动作还没产生时） | **0 条**（响应里没有 `actions` 键） |
+| `min_action_id: 1`（稍后） | **5 条**（`aid` 1..5 全量重放） |
+| `min_action_id: 6` | **2 条**（`aid` 6、7） |
+
+两次 `min_action_id: 1` 的对比说明：**服务端保留完整历史、按下界全量重放，未见任何截断**（至少 5 条以内是完整回放的）。
+
+::: tip 一个容易踩的点：你提交的动作会被广播回来
+上面那次 `min_action_id: 1` 返回的 5 条里，**aid 1/2/3 正是客户端自己刚提交的三个动作**（服务端把它们连同机器人的动作一起广播）。也就是说动作流是**双向合流**的，客户端靠 `action_id` 去重、靠它确认"我的动作生效了"。
+
+自建服务端必须把客户端提交的动作**按 `action_id` 追加进同一条流**，否则客户端会一直等自己的动作回执。
+:::
+
+至于服务端**最多**保留多少条（一局拖很久会不会截断、截断策略是什么），本次仍没测出来——需要一局有几十条以上动作的对局才能逼近上限，如实标出。
 
 > 轮询很频繁（客户端几百毫秒一次），实现时必须**只读内存、无 IO**，否则会拖垮整个服务。
 
@@ -297,16 +337,47 @@ struct FAction2 {               // 一条动作
 
 参考实现里同一个 key 既出现过字符串也出现过数字（`{"75": "20"}` 与 `{"75": 20}`）——**两种都能被接住**，但语义落在不同字段上。要用数字语义就发数字。
 
-### 两条通道
+### 三条通道
 
 | 通道 | 端点 | 明文外层 | 用途 |
 |---|---|---|---|
 | 玩法动作 | `POST /matches/v2/{id}/actions` | 一个 `FAction2`（`action_type` / `action_data`…） | 出牌、攻击、结束回合 |
-| 会话动作 | `PUT /matches/v2/{id}` | `{"action": "end-match", "value": {…}}` | 结束对局等对局级操作 |
+| 对局级会话动作 | `PUT /matches/v2/{id}` | `{"side":"","action":"end-match","value":{…}}` | 投降/结束对局 |
+| 玩家级会话动作 | `PUT /players/{codec 包}` | **裸 JSON** `{"action":"accept-eula","value":"accepted"}` | 遥测、同意协议 |
 
-两者都装在 **`{ "a": "<codec 包>" }`** 里。
+对局的两条通道把明文包在 **`{ "a": "<codec 包>" }`** 里；玩家级那条**不套 codec 信封**——它把玩家标识编码进 **URL 路径**，body 就是普通 JSON。详见[附录 H](/private-server/appendix/client-capture)第七节。
 
-### 已实测到的动作样本（唯一一条）
+### 真实客户端提交的动作（抓包实录）
+
+一份真实客户端打人机局的抓包，把提交格式完整暴露了（明文部分，`a` 字段里的包解出来后就是这些）：
+
+```jsonc
+// ① XStartOfGame —— 128 B
+{ "action_type": "XStartOfGame", "player_id": <我方 id>,
+  "action_data": { "playerID": <我方 id> },        // ← 注意是 camelCase 的 playerID
+  "action_id": 1, "local_subactions": 1 }
+
+// ② XActionStartOfTurn —— 142 B
+{ "action_type": "XActionStartOfTurn", "player_id": <我方 id>,
+  "action_data": { "side": "left", "56": "20" },
+  "action_id": 2, "local_subactions": 1 }
+
+// ③ XActionEndOfTurn —— 14 360 B（大头是 match_data）
+{ "action_type": "XActionEndOfTurn", "player_id": <我方 id>,
+  "match_data": { "cards": "[{…82 张牌…}]", "kredits_left": …, "match_type": "training", … },
+  "action_data": { "side": "left", "reason": "endTurnButton", "56": "20" },
+  "action_id": 3, "local_subactions": 1 }
+```
+
+::: warning 三个"少一个就被拒"的点
+1. **`local_subactions` 必须带**（实测值 `1`）。它是每个提交都有的顶层字段，客户端的开局载荷里也回了 `local_subactions: true`。早期我照着两套参考实现的 DTO 拼包（它们没有这个字段），12 种变体全被 `400 ACTION_ERROR` 挡掉——**这就是那次卡住的真正原因**。
+2. **`XStartOfGame` 的 `action_data` 是 `{"playerID": <id>}`**：键名是 camelCase 的 `playerID`，不是 `player_id`；且必须有值。
+3. **`"56"` / `"75"` 这一对数字键**：我方（`left`）用 `"56"`、机器人（`right`）用 `"75"`，值都是字符串 `"20"`。同一个动作两边**用不同的键**——按 `action_type` 硬编码一个键名就会在对手回合失效。推测是"该方本地玩家的某个字段 id"，但**未证实**，照抄实测值最稳。
+:::
+
+`match_data` 只在 `XActionEndOfTurn` 上出现（它是客户端主动上报的整局状态快照，字段清单见[附录 H](/private-server/appendix/client-capture)第六节）。
+
+### 已实测到的下行动作样本
 
 抓包里那条解码出来是：
 
@@ -318,10 +389,24 @@ struct FAction2 {               // 一条动作
 
 即"**对手在回合 1 投降**"，与响应里 `status: "finished"` 吻合。
 
-::: warning 动作类型命名：`Action*` 还是 `XAction*`，目前只有一半证据
-实测到的官方动作是 **`ActionEndMatch`**（无 `X` 前缀）；而两套参考实现用的全是 `XActionStartOfTurn` / `XActionEndOfTurn` / `XStartOfGame` 这类 `XAction*` 名字。
+::: warning 动作类型命名：`Action*` 与 `XAction*` **确实并存**（现已证实）
+| 前缀 | 实测动作 | 来源 |
+|---|---|---|
+| **`X*`** | `XStartOfGame` / `XActionStartOfTurn` / `XActionEndOfTurn` | 真实客户端提交（抓包） |
+| **`Action*`** | `ActionEndMatch` | 官服下发 + 私服下发 |
 
-两者**大概率并存**（`Action*` 走对局级事件、`XAction*` 走玩法动作），但本系列**只在官服上验到了 `ActionEndMatch` 这一条**，玩法动作的名字尚未证实（第九节）。补实现时请以客户端反编译里的字符串常量为准，别照抄参考实现。
+规律很清晰：**玩家自己的玩法动作带 `X` 前缀，对局级事件（结束对局）不带**。`X` 对应的应该就是"客户端本地发起的动作"——与 `local_subactions`（本地子动作）这个字段名呼应。两套参考实现用的 `XAction*` 名字是**对的**。
+:::
+
+::: tip 包的 3 字节头部不是 `action_id`
+第 4 章讲过 codec 包头部有 3 个字节。实测确认：**动作序号不在那里**，它在明文里的 `action_id`。
+
+| 材料 | 头部字段实测值 |
+|---|---|
+| 私服抓包（双向 12 个包） | 恒等于**对局 id**（6 位数，两个方向都一致） |
+| 官服抓包（同局两次下发） | 恒为 `15536472`；该局对局 id 是 9 位数——既不等于它，也不等于它的 mod 2²⁴ 截断值（差 52） |
+
+结论：这是**会话 / 路由 id，由服务端自选、客户端原样回显**，只需在同一局内保持一致。参考实现把它当 "session action id" 用，方向是对的；**但绝不要拿它当动作序号**。
 :::
 
 ## 八、强逻辑（必须守住的不变量）
@@ -345,11 +430,11 @@ struct FAction2 {               // 一条动作
 8. **轮询路径零 IO**
    几百毫秒一次的高频接口，只读内存。
 
-## 九、没打通的环节：玩法动作的提交
+## 九、玩法动作的提交：为什么一开始全被拒
 
-我写了一个"机器客户端"（用 PowerShell 实现 codec 编解码 + 完整时序）去官服实打一局，结果卡在**提交动作**这一步。**记录如下，因为它本身就是结论。**
+我写过一个"机器客户端"（PowerShell 实现 codec 编解码 + 完整时序）去官服实打一局，卡在提交动作：**12 种变体全被 `400 ACTION_ERROR` 拒掉**。拿到真实客户端的抓包后，原因清楚了——**漏了 `local_subactions`**。把排查过程保留下来，因为"怎么排除"本身有用。
 
-试过的全部变体，**一律 `400` + 裸文本 `ACTION_ERROR`**：
+### 失败矩阵（保留存档）
 
 | 变体 | 结果 |
 |---|---|
@@ -361,16 +446,53 @@ struct FAction2 {               // 一条动作
 | `PUT /matches/v2/{id}` + `{"action":"start-of-game","value":{}}` | 400 |
 | 包内 `action_id` 取 0 / 1 / 2，头部 aid 同步 | 400 |
 
-**能确定的**：`POST /matches/v2/{id}/actions` 这条路由**存在**（不是 404/405），`{a: packet}` 这个外层**是对的**（服务端解析到了内层并给出游戏层错误）。问题在**包内的动作内容**。
+**当时就能确定的两件事**（现在回看依然正确）：
 
-**两个尚未验证的假设**：
+1. `POST /matches/v2/{id}/actions` 这条路由**存在**（不是 404/405），说明路径没错；
+2. `{a: packet}` 这个外层**是对的**（服务端解到了内层才给出游戏层错误）。
 
-1. **动作类型名或必需字段不对**——官服要求特定名字/参数，而这个名字不在我手上的客户端产物里（UHT 头文件没有字符串常量，反编译的 34 个蓝图也不含网络层）；
-2. **可能要求存在活动的 WebSocket 会话**——官服实时通道是 `wss://ws.live.1939api.com/ws`，若服务端只接受"在线"会话提交的动作，纯 HTTP 就会被拒。这一点**无法从本次实验区分**。
+问题100%出在**包内的字段**——而两套参考实现的 DTO 里恰好**都没有 `local_subactions`**，照着它们拼包必然挂。
 
-**要打通，缺的是一份真实客户端提交动作的抓包**：用代理在真客户端里打一局人机，把 `POST /matches/v2/{id}/actions` 的**请求体**留下来即可——外层 `{a:...}` 里那段 codec 串，用第 4 章的方法解出来，动作类型名与全部必需字段就齐了。
+### 现在对齐的提交模板
 
-在拿到它之前，本节的所有"玩法动作"结论都应视为**未验证**。
+```jsonc
+// 开局（128 B）
+{ "action_type": "XStartOfGame", "player_id": <我方 id>,
+  "action_data": { "playerID": <我方 id> },
+  "action_id": 1, "local_subactions": 1 }
+
+// 开始回合（142 B）
+{ "action_type": "XActionStartOfTurn", "player_id": <我方 id>,
+  "action_data": { "side": "left", "56": "20" },
+  "action_id": 2, "local_subactions": 1 }
+
+// 结束回合（14 360 B，大头是 match_data）
+{ "action_type": "XActionEndOfTurn", "player_id": <我方 id>,
+  "match_data": { "cards": "[{…82 张牌…}]", "kredits_left": …, "match_type": "training", … },
+  "action_data": { "side": "left", "reason": "endTurnButton", "56": "20" },
+  "action_id": 3, "local_subactions": 1 }
+```
+
+必备字段清单：`action_type` / `player_id` / `action_data` / `action_id` / **`local_subactions`**，结束回合另加 `match_data`。`action_data` 的具体键随动作变（开局是 `playerID`，回合类动作是 `side` + `"56"`/`"75"`，结束回合再加 `reason`）。
+
+::: details 服务端要不要校验这些字段？
+官服会（缺 `local_subactions` 就 `ACTION_ERROR`）。**自建服务端建议宽松**：能取到 `action_type` 就放行，缺失字段用默认值补——因为不同客户端版本/平台发的东西并不完全一致（本项目抓到的就是 Android 构建），卡太死会把老客户端挡在门外。
+:::
+
+### 那个"WS 会话"假设怎么办
+
+上一版我列过两个假设，其中"官服可能要求活动 WebSocket 会话才接受动作"。现在的判断：
+
+- **已知的失败原因（缺 `local_subactions` + `action_data` 不对）已经足以解释全部 400**，不需要再引入 WS 假设（奥卡姆剃刀）；
+- 抓包里客户端确实是"WS 心跳 + HTTP 提交"并行的，但那台私服**不校验 WS**，全部动作纯 HTTP 就被接收了——说明**HTTP 提交在实现上不依赖 WS**；
+- 官服是否额外校验"WS 在线"，**仍未证实也未被排除**。真要确定，得在补齐字段后做一次"有 WS / 无 WS"的对照实验。
+
+### 还差的两块
+
+1. **更长的对局**才能拿到完整动作表（本次只有 3 种玩法动作）与窗口上限；
+2. **出牌/攻击类动作**的 `action_data` 键名（本局玩家只做了"结束回合"和"投降"）。
+
+这两块都可以用同一份抓包流程补：打一局更长的人机，把 `POST /matches/v2/{id}/actions` 的请求体留下来，用第 4 章的方法解包即可。
 
 ## 十、与参考实现对照
 
