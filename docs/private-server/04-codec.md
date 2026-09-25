@@ -36,6 +36,22 @@ title: 04 · 消息编解码 codec
 | `key` | 31–103 | 变长，长度 = `SALT_LENGTH_TABLE[tableIndex]` |
 | `b64Cipher` | 剩余 | 密文 Base64 |
 
+::: warning Base64 填充：真实客户端**保留** `=`，Go 参考实现只是解码时宽容
+实测真实客户端发出的包，尾部**都带** `=` 填充：
+
+| 明文长度 | 应填充 | 实测包尾 |
+|---|---|---|
+| 128 B | `=` | `…EFgLexA=` |
+| 142 B | `==` | `…f0JZHA==` |
+| 14 360 B | `=` | `…VAxScgw=` |
+
+而 `kardsservergo` 的解码器里写着 `strings.TrimRight(b64, "=")`——那只是**解码端宽容**，不等于"协议不带填充"。
+
+**建议**：编码时**保留** `=`（.NET 的 `Convert.ToBase64String`、Go 的 `base64.StdEncoding` 默认就会带）；解码时**两种都收**（先把填充补回来：`b64 + strings.Repeat("=", (4-len(b64)%4)%4)`）。这样既不违背真实客户端的约定，也不会被严格解码器（.NET `Convert.FromBase64String`、Python `base64.b64decode` 默认校验）拒掉。
+
+另外注意 `b64ActionId` **恰好 4 字符、永远不需要填充**（3 字节正好 4 字符）——别把它当成"整个包都不带填充"的证据。
+:::
+
 密钥长度表（75 项，按原始 C 源码）：
 
 ```ts

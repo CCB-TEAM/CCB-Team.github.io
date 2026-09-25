@@ -105,7 +105,7 @@ Go 的 upgrader 声明了 `Subprotocols: []string{"ws"}`。客户端请求 `Sec-
 完整调用序列见[附录 H](/private-server/appendix/client-capture)第九节。
 :::
 
-## 四个 channel
+## channel 一览
 
 | channel | 方向 | 行为 |
 |---|---|---|
@@ -114,6 +114,33 @@ Go 的 upgrader 声明了 `Subprotocols: []string{"ws"}`。客户端请求 `Sec-
 | `emoji` | C→S→C | 表情，同 `touchcard`（**Go 实现漏了这个 channel**；[fyserver](/projects/fyserver) 与 TS 版都有） |
 | `notification` | C→S→C | 只在 `message` 是 `websocketcheck` / `matchaction` / `im_here` 时转发 |
 | `disconnect` | S→C | 服务端主动踢人，`message` 是给玩家看的理由 |
+| `logged_in_elsewhere` | S→C | **实测新增**：账号在别处登录时的提示（[第 13 章](/private-server/13-bot-and-actions)第九节连官服 WS 时收到过），`message` 是 Unix 毫秒数字 |
+
+::: tip 官服 WS 的握手与 pong（实测）
+连官服 WS 的实测参数（用 .NET `ClientWebSocket` 复现成功）：
+
+```http
+GET /ws HTTP/1.1
+Host: ws.live.1939api.com
+Authorization: <token>              ← 注意**不带** "JWT " 前缀（HTTP 请求里才带）
+Sec-WebSocket-Protocol: ws
+Origin: http://<host>
+```
+
+服务端回 `pong` 长这样：
+
+```json
+{ "message": "pong", "channel": "ping", "context": "",
+  "timestamp": "2026-09-25T07:19:04.162435+00:00",
+  "sender": 8826495, "receiver": "" }
+```
+
+三个细节：
+
+- `timestamp` 是 **RFC3339 带 6 位小数与 `+00:00` 偏移**（Go 的 `time.Time` 序列化风格）——和私服（Unix 毫秒字符串）不一样，客户端两种都收；
+- `sender` 这里是**数字**，而私服那份抓包里是**字符串** `"347676"` —— 客户端两种都收，服务端别做严格校验；
+- `pong` 里**没有** `match_id`（客户端发的 ping 里才有）。
+:::
 
 ::: code-group
 

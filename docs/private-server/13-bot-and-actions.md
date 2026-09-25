@@ -9,7 +9,7 @@ title: 13 · 人机对局与对局内协议
 ::: tip 三条一句话结论
 1. `actions` 数组里装的**不是 JSON 对象，而是 codec 编码串**（第 4 章那套），每条解码后是一个 action。
 2. **`location_number` 是"牌序位"**——发牌时手牌 `0..N-1`、牌库紧接 `N..38`；换牌后服务端会给牌库**重新编号**。
-3. 玩法动作的**提交格式**已由一份真实客户端抓包解开（第九节）：外层 `{a: 包}` 是对的，包内除 `action_type` / `action_data` 外**还必须有 `local_subactions`**——这正是早期尝试被 `400 ACTION_ERROR` 拒掉的原因。
+3. 玩法动作的**提交格式**已由一份真实客户端抓包解开（第九节）：外层 `{a: 包}`，包内除 `action_type` / `action_data` 外**还必须有 `local_subactions`**。**但按这个格式打官服依然被拒**——官服另有门槛，第九节列了完整的排除过程与剩下的唯一线索。
 :::
 
 ## 一、进入人机：`POST /singleplayerlobby`
@@ -430,30 +430,11 @@ struct FAction2 {               // 一条动作
 8. **轮询路径零 IO**
    几百毫秒一次的高频接口，只读内存。
 
-## 九、玩法动作的提交：为什么一开始全被拒
+## 九、玩法动作的提交：格式已解开，但官服还有一道门槛
 
-我写过一个"机器客户端"（PowerShell 实现 codec 编解码 + 完整时序）去官服实打一局，卡在提交动作：**12 种变体全被 `400 ACTION_ERROR` 拒掉**。拿到真实客户端的抓包后，原因清楚了——**漏了 `local_subactions`**。把排查过程保留下来，因为"怎么排除"本身有用。
+我写过一个"机器客户端"（PowerShell 实现 codec 编解码 + 完整时序）去官服实打一局，卡在提交动作。后来拿到真实客户端的抓包，格式对上了；但**按真实客户端的格式重新提交，官服依然拒**——所以这一节分两半：**格式（已解开）**与**官服那道额外的门槛（未解开）**。
 
-### 失败矩阵（保留存档）
-
-| 变体 | 结果 |
-|---|---|
-| `XStartOfGame`（带/不带 `turn_number`、`sub_actions`） | 400 ACTION_ERROR |
-| `XStartOfGame` 且 `action_data` 用 `FActionValue2` 数组形态 | 400 |
-| `XActionStartOfGame` / `StartOfGame` / `XStartGame` / `ActionStartOfGame` | 400 |
-| `XActionStartOfTurn`（带 `{side:"left"}`） | 400 |
-| `XActionEndOfTurn`（带 `{reason:"endTurnButton", side:"left"}`） | 400 |
-| `PUT /matches/v2/{id}` + `{"action":"start-of-game","value":{}}` | 400 |
-| 包内 `action_id` 取 0 / 1 / 2，头部 aid 同步 | 400 |
-
-**当时就能确定的两件事**（现在回看依然正确）：
-
-1. `POST /matches/v2/{id}/actions` 这条路由**存在**（不是 404/405），说明路径没错；
-2. `{a: packet}` 这个外层**是对的**（服务端解到了内层才给出游戏层错误）。
-
-问题100%出在**包内的字段**——而两套参考实现的 DTO 里恰好**都没有 `local_subactions`**，照着它们拼包必然挂。
-
-### 现在对齐的提交模板
+### 格式：真实客户端就是这么发的（已验证）
 
 ```jsonc
 // 开局（128 B）
@@ -473,26 +454,56 @@ struct FAction2 {               // 一条动作
   "action_id": 3, "local_subactions": 1 }
 ```
 
-必备字段清单：`action_type` / `player_id` / `action_data` / `action_id` / **`local_subactions`**，结束回合另加 `match_data`。`action_data` 的具体键随动作变（开局是 `playerID`，回合类动作是 `side` + `"56"`/`"75"`，结束回合再加 `reason`）。
+必备字段：`action_type` / `player_id` / `action_data` / `action_id` / **`local_subactions`**，结束回合另加 `match_data`；`b64Cipher` 要**保留 base64 填充**（[第 4 章](/private-server/04-codec)）。
 
-::: details 服务端要不要校验这些字段？
-官服会（缺 `local_subactions` 就 `ACTION_ERROR`）。**自建服务端建议宽松**：能取到 `action_type` 就放行，缺失字段用默认值补——因为不同客户端版本/平台发的东西并不完全一致（本项目抓到的就是 Android 构建），卡太死会把老客户端挡在门外。
+**自建服务端照这个收就对了**——实测那台私服（`fyserver`）原样收下并正确推进了对局，两套参考实现里没有的 `local_subactions` 也照样能用。
+
+### 官服那道门槛：试过的都排除了
+
+按上面的格式重新打官服，结果**仍然 `400 ACTION_ERROR`**。逐项排除如下：
+
+| 假设 | 实测 | 结论 |
+|---|---|---|
+| 外层信封 `{a: 包}` 不对 | 路由存在、服务端解到内层才报游戏层错误 | ❌ 排除 |
+| 动作类型名不对 | `XStartOfGame` / `XActionStartOfGame` / `StartOfGame` / `XStartGame` / `XActionStartOfTurn` / `XActionEndOfTurn` 全试 | ❌ 不足以解释 |
+| `action_data` 形态不对 | 对象 / `FActionValue2` 数组 / 带 `side` / 带 `playerID` 都试 | ❌ 排除 |
+| 缺 `local_subactions` | 补上照样 400 | ❌ 排除（**注意：这不是官服被拒的原因**，只是私服路径上必需的字段） |
+| Base64 填充被裁 | 保留 `=` 重试照样 400 | ❌ 排除 |
+| 头部 3 字节会话 id 取值 | `0` / 对局 id 截断 / 我方 id 截断 全试 | ❌ 排除 |
+| 没有活动的 WebSocket 会话 | 用 .NET WebSocket 真连上 `wss://ws.live.1939api.com/ws` 并完成 ping/pong（含带 `match_id` 的心跳），再提交照样 400 | ❌ 排除 |
+| 请求头不像客户端 | 换成客户端同款 `X-Api-Key`（`…:KLink 29452.29452`）、`User-Agent`、`Accept` 照样 400 | ❌ 排除 |
+
+**还剩什么？** 一条实测线索：**官服的开局载荷顶层只有 `match_and_starting_data`，而那台私服的顶层多了 `local_subactions: true`**。这很像**能力协商**——服务端声明自己支持 `local_subactions`，客户端才在动作里带它。
+
+如果是这样，那么客户端跟官服说话时用的是**另一套（不带 `local_subactions` 的）动作格式**，而我手上只有"客户端 → 私服"的样本，所以拼不出官服那一套。**这条推断没有验证**，但它是目前最合理的解释，也指出了唯一的取证路径：**抓一份真实客户端打官服的动作提交**（需要代理 + 证书拦截 `kards.live.1939api.com`，本系列最早那份官服抓包就是这么来的），把 `POST /matches/v2/{id}/actions` 的请求体解出来即见分晓。
+
+::: tip 对私服作者的实际意义
+这一整节的未解之谜**不影响自建私服**：
+
+- 你的服务端只需要**接受**真实客户端发来的格式（上面那份模板），实测已被 `fyserver` 验证可行；
+- "官服还认什么"只关系到"官方协议考古"，不关系到能不能开局。
+
+所以实现时按模板收、字段校验放宽即可，不必纠结官服那道门槛。
 :::
 
-### 那个"WS 会话"假设怎么办
+### 失败矩阵（存档）
 
-上一版我列过两个假设，其中"官服可能要求活动 WebSocket 会话才接受动作"。现在的判断：
+| 变体 | 结果 |
+|---|---|
+| `XStartOfGame`（带/不带 `turn_number`、`sub_actions`） | 400 ACTION_ERROR |
+| `XStartOfGame` 且 `action_data` 用 `FActionValue2` 数组形态 | 400 |
+| `XActionStartOfGame` / `StartOfGame` / `XStartGame` / `ActionStartOfGame` | 400 |
+| `XActionStartOfTurn`（带 `{side:"left"}`） | 400 |
+| `XActionEndOfTurn`（带 `{reason:"endTurnButton", side:"left"}`） | 400 |
+| `PUT /matches/v2/{id}` + `{"action":"start-of-game","value":{}}` | 400 |
+| 包内 `action_id` 取 0 / 1 / 2，头部 aid 同步 | 400 |
 
-- **已知的失败原因（缺 `local_subactions` + `action_data` 不对）已经足以解释全部 400**，不需要再引入 WS 假设（奥卡姆剃刀）；
-- 抓包里客户端确实是"WS 心跳 + HTTP 提交"并行的，但那台私服**不校验 WS**，全部动作纯 HTTP 就被接收了——说明**HTTP 提交在实现上不依赖 WS**；
-- 官服是否额外校验"WS 在线"，**仍未证实也未被排除**。真要确定，得在补齐字段后做一次"有 WS / 无 WS"的对照实验。
+**当时就能确定的两件事**（现在回看依然正确）：路由存在（不是 404/405）、外层 `{a: packet}` 正确（服务端解到了内层）。
 
 ### 还差的两块
 
-1. **更长的对局**才能拿到完整动作表（本次只有 3 种玩法动作）与窗口上限；
-2. **出牌/攻击类动作**的 `action_data` 键名（本局玩家只做了"结束回合"和"投降"）。
-
-这两块都可以用同一份抓包流程补：打一局更长的人机，把 `POST /matches/v2/{id}/actions` 的请求体留下来，用第 4 章的方法解包即可。
+1. **官服的动作提交格式**（见上，需要"客户端 → 官服"的抓包）；
+2. **出牌/攻击类动作**的 `action_data` 键名——手上这份对局里玩家只做了"结束回合"和"投降"，所以只覆盖了 3 种玩法动作。更长的对局（无论对官服还是对私服）都能补上。
 
 ## 十、与参考实现对照
 

@@ -98,7 +98,7 @@ KismetDecompiler --input  <蓝图导出目录> \
 下面这些点，本系列**已经明确标注为推断或未定**。它们不是"待办"，而是诚实的边界——把边界写出来，比假装全都清楚更有用。
 
 ::: tip 大部分已在 2026-09-25 用官服实测回答
-其中 1、2、3、5、6、7、9 已被[附录 F · 官服实测对照](/private-server/appendix/live-probe)确认（含两处**纠正**：library 的主键是 `card_type` 而非 `id`/`deck_id`；请求 `provider` 是 `device_id` 而 claim 才是 `device`）。仅 4、8、10 仍需对局抓包或走商店链路。
+其中 1、2、3、4、5、6、7、9 已被[附录 F · 官服实测对照](/private-server/appendix/live-probe)与[附录 H · 真实客户端抓包实录](/private-server/appendix/client-capture)确认（含两处**纠正**：library 的主键是 `card_type` 而非 `id`/`deck_id`；请求 `provider` 是 `device_id` 而 claim 才是 `device`）。仅 8、10 仍需客户端实测或走商店链路；**11–13 是新增的未解项**，都以真实抓包为背景。
 :::
 
 | # | 问题 | 目前掌握 | 一分钟验证法 |
@@ -106,13 +106,17 @@ KismetDecompiler --input  <蓝图导出目录> \
 | 1 | ✅ **已确认：是绝对地址** | 官服 `GET /` 的 `endpoints.*` 与 `/session` 的 `*_url` 全部是含 host 的绝对 URL | 见 [附录 F](/private-server/appendix/live-probe) |
 | 2 | ✅ **已确认：取第二段** | 官服 `root` = `https://kards.live.1939api.com`，点分第二段正是 `live` | 见 [附录 F](/private-server/appendix/live-probe) |
 | 3 | ✅ **已确认：两者都不是，是 `card_type`** | 官服 library 外层是 `{cards, new_cards}`（与正文一致），条目主键是资产名 `card_type`，另有 `count` / `gold_card_count` / `player_id` / `recently_crafted_count`，**没有 `id` 也没有 `deck_id`** | 见 [附录 F](/private-server/appendix/live-probe) |
-| 4 | `action_data` 的确切形状 | 官服只读接口不涉及，仍需抓**对局中**的包 | 用一个动作分别按两种形状提交，看客户端是否都认 |
+| 4 | ✅ **已确认：是对象，键随动作变** | 真实客户端抓包：`XStartOfGame` → `{"playerID":<id>}`；`XActionStartOfTurn` → `{"side":"left","56":"20"}`；`XActionEndOfTurn` 再加 `reason`。**左右侧的数字键不同**（left 用 `"56"`、right 用 `"75"`） | 见[附录 H](/private-server/appendix/client-capture)与[第 13 章](/private-server/13-bot-and-actions) |
 | 5 | **基本确认：不校验签名** | 官服 token 用 **RS256**；私服手搓的 HS256/无签名令牌能用，说明客户端不验签。另：claim 里 `provider` 是 `device`，**请求里才是 `device_id`** | 见 [附录 F](/private-server/appendix/live-probe) |
 | 6 | ✅ **已确认：取客户端项目版本** | 官服 `versions = ["Kards 1.60"]`，而登录 DTO 的 `version` 是 `Kards 1.48.24871.launcher`，该组合**登录成功** → 闸门比的不是 DTO 的 `version` 字段 | 见 [附录 F](/private-server/appendix/live-probe) |
 | 7 | ✅ **已确认：同一份响应内就混用** | 一份 `/session` 里 `server_time` 点分、`last_logon_date` ISO+6 位、`new_player_login_reward.reset` 空格分隔；且 `GET /` 的 `server_time` 是 ISO——**同名键在两条接口格式不同** | 见 [附录 F](/private-server/appendix/live-probe) |
 | 8 | **部分确认：不拦登录** | 探测时官服 `xserver_closed` 非空而 `/session` 仍返回 200 → 维护提示是客户端侧展示逻辑 | 弹窗样式仍需客户端实测 |
 | 9 | ✅ **已确认：请求 `device_id`，claim `device`** | `provider: "device"` 会被官服拒为 `Unknown provider`；`/session` 必填字段只有 `provider` + `provider_details` | 见 [附录 F](/private-server/appendix/live-probe) |
 | 10 | `EKardsProvider` 与登录 `provider` 的关系 | 确认**不是**同一件事；官服 `provider_details.payment_provider` 实测为 `XSOLLA`，完整取值集合需走商店链路 | 抓 `provider_details.payment_provider` 的取值范围 |
+
+| 11 | ❓ **官服动作提交的额外门槛** | 按真实客户端的完整格式（含 `local_subactions`、保留 base64 填充、开着带 `match_id` 心跳的 WS、客户端同款请求头）提交，官服**仍回 `400 ACTION_ERROR`**。已排除：信封、动作名、`action_data` 形状、填充、包头部取值、WS 会话、请求头。唯一线索：官服开局载荷**没有** `local_subactions`，而那台私服有 → 疑似能力协商导致两边格式不同 | 抓一份**客户端 → 官服**的动作提交（代理 + 证书拦截），解出请求体 |
+| 12 | ❓ **出牌/攻击类动作的字段** | 现有两局样本只覆盖 `XStartOfGame` / `XActionStartOfTurn` / `XActionEndOfTurn` / `ActionEndMatch` 四种 | 打一局更长的人机（对官服或对私服），把 `POST /matches/v2/{id}/actions` 的请求体全部留下 |
+| 13 | ❓ **动作流的保留上限** | 实测 `min_action_id` 是闭区间下界、5 条以内全量重放、无截断；但"一局几十条动作后是否截断"未知 | 找一局动作多的对局，用 `min_action_id=1` 轮询看返回条数 |
 
 ::: tip 为什么要专门列一张"不知道"的表
 协议逆向里最危险的不是"没搞懂"，而是**把推测当事实写进代码**——这类错误会在很久之后以一个毫不相关的形式暴露出来。把不确定项集中列出，至少保证：读者知道哪里要自己验，以及怎么验。
