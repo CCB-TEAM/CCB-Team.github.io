@@ -212,7 +212,7 @@ hasAlpine  hasAmbush  hasBlitz  hasFury  hasGuard  hasMobilize  hasSmokescreen
 ```
 
 - `timestamp` 是 **Unix 毫秒的字符串**；
-- `channel: "ping"` 就是第 9 章那四个 channel 里的心跳；
+- `channel: "ping"` 就是[第 9 章](/private-server/09-websocket)那六个 channel 里的心跳；
 - 心跳里带 `match_id`，意思是"我还在这局里"——离线判定（`idel_disconnect_minutes`）就靠它。
 
 ## 十、零散响应的真实形态

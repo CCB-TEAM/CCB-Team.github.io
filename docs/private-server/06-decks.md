@@ -27,7 +27,7 @@ title: 06 · 卡组与卡组码
 
 | 字段 | 要点 |
 |---|---|
-| `main_faction` / `ally_faction` | `Germany` `Britain` `Japan` `Soviet` `USA`；盟友还可用 `France` `Italy` `Poland` `Finland`。**大小写敏感**，和卡组码里的数字是两套表示 |
+| `main_faction` / `ally_faction` | `Germany` `Britain` `Japan` `Soviet` `USA`；盟友还可用 `France` `Italy` `Poland` `Finland`。**客户端发的是这种 PascalCase 写法，而官服回的是小写**（`japan` / `germany`，见[附录 F](/private-server/appendix/live-probe)）→ **服务端必须大小写不敏感**。和卡组码里的数字是两套表示 |
 | `card_back` | 默认 `cardback_starter_{main_faction 小写}` |
 | `id` | 服务端生成（参考实现是 6 位随机数），必须唯一且稳定——对局里用它索引卡组 |
 | 三个时间 | ISO 8601 带 6 位小数 + `Z` |

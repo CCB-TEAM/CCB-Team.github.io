@@ -216,7 +216,7 @@ struct FCardData {
     int32   player_id;        // ←
     FName   side;             // ←
     FName   Location;         // ← "hand_left" 等
-    int32   location_number;  // ← 同一区域内的序号
+    int32   location_number;  // ← **牌序位**（手牌 0..N-1、牌库接 N..38；换牌后重编号）
     int32   movement_left, attack_left, enter_play_on_turn;
     bool    has_ever_attacked, hasBlitz, hasAmbush, hasSmokescreen, hasFury, hasGuard;
     int32   heavyArmor, pinnedTurns, maxAttack, maxDefense, gotchaActivated;

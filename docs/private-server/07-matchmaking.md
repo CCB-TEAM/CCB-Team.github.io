@@ -126,6 +126,8 @@ if (match == null) return Results.Text("null");    // ← 纯文本，不是 JSO
 
 ```jsonc
 {
+  // ⚠️ 官服实测：顶层**只有** match_and_starting_data。
+  //    local_subactions 是私服（fyserver）自己加的键，官服没有（见附录 H §10）
   "local_subactions": true,
   "match_and_starting_data": {
     "match": {
@@ -147,7 +149,7 @@ if (match == null) return Results.Text("null");    // ← 纯文本，不是 JSO
       "player_status_right": "not_done",
       "right_is_online": 1,
       "start_side": "left",
-      "status": "pending",                    // pending → running → finished
+      "status": "running",                    // 官服实测**开局即 running**（pending 是参考实现的取值）
       "winner_id": 0, "winner_side": ""
     },
     "starting_data": {
@@ -157,8 +159,8 @@ if (match == null) return Results.Text("null");    // ← 纯文本，不是 JSO
       "card_back_right": "cardback_starter_britain",
       "starting_hand_left":  [ /* 4 张 MatchCard */ ],
       "starting_hand_right": [ /* 5 张 */ ],
-      "deck_left":  [ /* 剩余 36 张 */ ],
-      "deck_right": [ /* 剩余 35 张 */ ],
+      "deck_left":  [ /* 剩余 35 张 */ ],
+      "deck_right": [ /* 剩余 34 张 */ ],
       "equipment_left": ["cardback_x"],       // 只发 item_id
       "equipment_right": [],
       "is_ai_match": false,
@@ -183,7 +185,9 @@ if (match == null) return Results.Text("null");    // ← 纯文本，不是 JSO
   "card_id": 7,                    // 本局唯一，客户端用它指代一张牌
   "is_gold": false,
   "location": "hand_left",         // deck_left/deck_right/hand_left/hand_right/board_hqleft/board_hqright
-  "location_number": 2,            // 同一 location 内的序号（手牌从左到右）
+  "location_number": 2,            // ← **牌序位**（0 基），不是"区域内的序号"
+                                   //   发牌时手牌 0..N-1、牌库紧接 N..38（连号）；
+                                   //   换牌后服务端把整副牌库**从 0 重新编号**（第 13 章 §4）
   "name": "card_unit_1st_infantry" // 卡牌资产名
 }
 ```
@@ -194,8 +198,10 @@ if (match == null) return Results.Text("null");    // ← 纯文本，不是 JSO
 
 | 侧 | `card_id` 起始 | 起手 | 牌库 |
 |---|---|---|---|
-| left | `1` 起（第 1 个给 HQ） | 4 张 | 剩余 36 张 |
-| right | `41` 起（第 1 个给 HQ） | 5 张 | 剩余 35 张 |
+| left | `1` 起（第 1 个给 HQ） | 4 张 | 剩余 35 张 |
+| right | `41` 起（第 1 个给 HQ） | 5 张 | 剩余 34 张 |
+
+> 每侧共 40 张 = HQ 1 + 手牌 + 牌库（实测抓包里 82 张 = 40 + 40 + 2 张 `NotAvailable`，见[附录 H](/private-server/appendix/client-capture) §5）。
 
 ```csharp
 // 1. 解析卡组码 → 展开成 30 张（40 张含倍数）卡牌实例，card_id 从 startId 递增
@@ -212,10 +218,11 @@ cards = cards.OrderBy(_ => Random.Shared.Next())
              .Select((c, i) => c with { LocationNumber = i }).ToList();
 
 // 3. 切手牌：左侧 4 张、右侧 5 张，手牌 location_number 从 0 重排，牌库接着排
-var hand = cards.Take(isLeft ? 4 : 5)
+var handSize = isLeft ? 4 : 5;                              // ← 别写死 4：右侧是 5 张
+var hand = cards.Take(handSize)
                 .Select((c, i) => c with { Location = isLeft ? "hand_left" : "hand_right", LocationNumber = i });
-var deck = cards.Skip(4)
-                .Select((c, i) => c with { LocationNumber = i + 4 });
+var deck = cards.Skip(handSize)
+                .Select((c, i) => c with { LocationNumber = i + handSize });
 ```
 
 ::: tip 三个"必须一致"的点

@@ -67,7 +67,7 @@ title: 自己写私服 · 总览
 | `GET` | `/matches/v2/reconnect` | 断线重连，回放全部动作 | [08](/private-server/08-match-actions) |
 | `POST` | **`/matches/v2/{id}/actions`** | 提交动作（codec 加密） | [08](/private-server/08-match-actions) |
 | `PUT` | **`/matches/v2/{id}/actions`** | 轮询对手动作 | [08](/private-server/08-match-actions) |
-| `POST`/`PUT` | **`/matches/v2/{id}/mulligan`** | 调度（换牌） | [08](/private-server/08-match-actions) |
+| `POST` | **`/matches/v2/{id}/mulligan`** | 换牌（**只有 POST**，`PUT` 返回 405） | [08](/private-server/08-match-actions) |
 | `PUT` | **`/matches/v2/{id}`** | 结束对局 | [08](/private-server/08-match-actions) |
 | `WS` | **`ws://host:5232/ws`** | 实时通道 | [09](/private-server/09-websocket) |
 
