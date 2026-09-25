@@ -121,7 +121,7 @@ export default defineConfig({
         {
           text: '进阶专题',
           items: [
-            { text: '13 · 人机对局与 actions 协议', link: '/private-server/13-bot-and-actions' },
+            { text: '13 · 人机对局与对局内协议', link: '/private-server/13-bot-and-actions' },
           ],
         },
         {
