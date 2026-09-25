@@ -61,7 +61,7 @@ title: 自己写私服 · 总览
 | `POST` | **`/players/{id}/decks`** | 新建卡组 | [06](/private-server/06-decks) |
 | `PUT` | **`/players/{id}/decks/{deckId}`** | 改卡组（`fill` / `rename` / `change_card_back` / `make_favorite`） | [06](/private-server/06-decks) |
 | `POST` | **`/lobbyplayers`** | 进匹配队列 | [07](/private-server/07-matchmaking) |
-| `POST` | `DELE` `/lobbyplayers` | 退出队列 | [07](/private-server/07-matchmaking) |
+| `DELETE` | **`/lobbyplayers`** | 退出队列 | [07](/private-server/07-matchmaking) |
 | `POST` | `/singleplayerlobby` | 单人/人机队列 | [07](/private-server/07-matchmaking) |
 | `GET` | **`/matches/v2/`** | 轮询：是否匹配到对手 → 开局数据 | [07](/private-server/07-matchmaking) |
 | `GET` | `/matches/v2/reconnect` | 断线重连，回放全部动作 | [08](/private-server/08-match-actions) |
@@ -112,3 +112,4 @@ nest new mykards      # 或 npm init -y && npm i express ws
 - [附录 A · UHT 结构体与枚举注解](/private-server/appendix/uht-structs) —— `endpoints` / `FMatch2` / `FCardData` / `FJwtPayload` 等客户端结构体逐字段注解；`EFactionEnum` 就是卡组码国家位、`ECardLocationEnum` 就是 `location` 字符串
 - [附录 B · 蓝图反编译注解](/private-server/appendix/decompile-notes) —— `server_options` 的 25 个配置键与默认值、**版本闸门** `Is Client Version OK`、dev/live 从 `endpoints.root` 推导、五国等级与阵营颜色表
 - [附录 C · 客户端如何解析端点与配置](/private-server/appendix/client-flow) —— 从硬编码基址到进对局的完整链路时序，以及"哪些是实测、哪些是推断"
+- [附录 D · 自检脚本与常量速查](/private-server/appendix/smoke-test) —— 常量速查表 + 可复制的 PowerShell 冒烟脚本（10 步逐步 `✓`/`✗` 并指向对应章节）
