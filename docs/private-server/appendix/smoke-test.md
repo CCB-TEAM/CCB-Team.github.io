@@ -15,8 +15,8 @@ title: 附录 D · 自检脚本与常量速查
 | HTTP | `5231`（`kardsservergo` 的 `port`） |
 | WebSocket | `5232`（`kardsservergo` 的 `wsport`）；`fyserver` 把 WS 合进 5231 根路径升级 |
 | 鉴权头 | `Authorization: JWT <token>`（注意前缀是 `JWT `，不是 `Bearer `） |
-| **免鉴权白名单** | 只有三个：`/`、`/session`、`/.com/config` |
-| 响应约定 | 未匹配到对手 = 字符串 `null`；保活 = 字符串 `running`；没换过牌 = 字符串 `null` |
+| **免鉴权白名单** | 本项目约定三个：`/`、`/session`、`/.com/config`；**官服实际是 `/`、`/session`、`/config`**（`/.com/config` 在官服 404） |
+| 响应约定 | 未匹配到对手 = `null`（官服是 **JSON null**，参考实现回字符串 `null`，两者客户端都认）；保活 = 字符串 `running`；没换过牌 = `null` |
 
 ### codec 报文布局
 
@@ -178,13 +178,13 @@ Step 'POST /lobbyplayers  进匹配队列' '07' {
     '已入队'
 }
 
-# ── 8. 轮询匹配（单人时预期字符串 "null"）──────────────────────
+# ── 8. 轮询匹配（单人时预期 null）──────────────────────────────
 Step 'GET /matches/v2/?player_id=  轮询' '07' {
     $raw = (Invoke-WebRequest -Uri "$Base/matches/v2/?player_id=1" -Headers $H `
                               -TimeoutSec 15 -SkipHttpErrorCheck).Content
     $t = "$raw".Trim()
-    if ($t -eq 'null')  { return '字符串 "null"（无对手，符合预期）' }
-    if ($t -eq '{}')    { throw '返回了 JSON {}：客户端会卡在排队转圈，必须返回字符串 null' }
+    if ($t -eq 'null')  { return 'null（无对手，符合预期；官服即返回 JSON null）' }
+    if ($t -eq '{}')    { throw '返回了 JSON {}：客户端会卡在排队转圈，必须返回 null' }
     if ($t -eq '')      { throw '响应体为空' }
     $o = $t | ConvertFrom-Json
     if (-not $o.match) { throw '有响应但缺 match 字段' }
@@ -223,7 +223,7 @@ if ($fail.Count -eq 0) {
 ::: warning 脚本里三个刻意的"严格检查"
 1. **`endpoints` 必须是绝对地址**——这是推断结论，脚本把它变成可执行断言（[附录 C](/private-server/appendix/client-flow) 说明了推理依据）；
 2. **`server_options` 必须是字符串**——写成对象就会在这一步直接暴露；
-3. **未匹配时必须是字符串 `null`**——返回 `{}` 是最常见的"排队永远转圈"原因。
+3. **未匹配时必须回 `null`**——返 `{}` 是最常见的"排队永远转圈"原因。官服实测返回的是 **JSON `null`**，参考实现回**字符串 `null`**，两种客户端都接受（[附录 F](/private-server/appendix/live-probe)）。
 :::
 
 ## 三、bash / curl 精简版
@@ -246,7 +246,7 @@ curl -s -X POST $BASE/session -H 'Content-Type: application/json' \
   -d '{"provider":"device","username":"tester","password":""}' \
   | jq -r '.server_options | fromjson | {websocketurl, versions}'
 
-# 4) 未匹配时必须回字符串 null（不是 JSON null）
+# 4) 未匹配时回 null（官服为 JSON null，字符串 null 亦可）
 curl -s "$BASE/matches/v2/?player_id=1" -H "Authorization: JWT $TOKEN"
 
 # 5) 卡牌库非空
@@ -260,8 +260,8 @@ curl -s "$BASE/players/1/library" -H "Authorization: JWT $TOKEN" | jq '.cards | 
 | 第一步 `GET /` 就失败 | 客户端/探测没指向你的服务；或 `endpoints` 给了相对路径 | [02](/private-server/02-bootstrap) |
 | 登录 400 | 框架严格校验拒绝了未知字段（关掉 `forbidNonWhitelisted` 或补全 DTO） | [03](/private-server/03-session) |
 | 登录成功但一进游戏被登出 | `current_user.exp` 填了时间戳而非用户 ID；或 Go 的 token 一致性检查没过 | [02](/private-server/02-bootstrap) / [03](/private-server/03-session) |
-| 收藏界面空 | `/players/{id}/library` 未实现，或 `cards[].id` 与客户端卡表不一致 | [05](/private-server/05-player-data) |
-| 排队永远转圈 | `/matches/v2/` 回的是 JSON `null` 或 `{}`，而不是字符串 `null` | [07](/private-server/07-matchmaking) |
+| 收藏界面空 | `/players/{id}/library` 未实现，或条目缺 `card_type`（官服条目里没有卡牌数字 `id`） | [05](/private-server/05-player-data) |
+| 排队永远转圈 | `/matches/v2/` 回了 `{}`（必须是 `null`——官服是 JSON null，字符串 null 亦可，但**不能是空对象**） | [07](/private-server/07-matchmaking) |
 | 一进牌桌掉线 | `server_options.websocketurl` 指向 `127.0.0.1` 或不可达端口 | [09](/private-server/09-websocket) |
 | 动作提交后对手看不到 | 提交/轮询的 codec 参数不一致，或 `dataLength` 校验没过 | [04](/private-server/04-codec) / [08](/private-server/08-match-actions) |
 | 胜负不结算 | 没把 `status` 置 `finished`、`player_status_*` 置 `end_match` | [08](/private-server/08-match-actions) |

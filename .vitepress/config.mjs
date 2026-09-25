@@ -120,6 +120,7 @@ export default defineConfig({
             { text: 'D · 自检脚本与常量速查', link: '/private-server/appendix/smoke-test' },
             { text: 'E · 复现指南与待验证清单', link: '/private-server/appendix/open-questions' },
             { text: 'F · 官服实测对照', link: '/private-server/appendix/live-probe' },
+            { text: 'G · 端点矩阵与数据复用', link: '/private-server/appendix/endpoint-matrix' },
           ],
         },
       ],

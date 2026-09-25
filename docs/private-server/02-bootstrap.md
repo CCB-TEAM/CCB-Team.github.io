@@ -33,9 +33,9 @@ title: 02 · 引导接口与最小服务
     "tourneys":          "http://127.0.0.1:5231/tourney/"
   },
   "host_info": {
-    "container_name": "kards-backend-LIVE",
+    "container_name": "<容器名>",
     "docker_image":   "…/kards-backend:live",
-    "host_address":   "127.0.0.1", "host_name": "cometkards", "instance_id": "i-03598bff8bd68fdee"
+    "host_address":   "10.0.0.1", "host_name": "<主机名>", "instance_id": "i-…"
   },
   "server_time":  "2025.10.13-17.31.40",
   "service_name": "kards-backend",
@@ -130,7 +130,7 @@ app.MapGet("/", (HttpContext ctx) =>
             ["singleplayerlobby"] = $"{Base}/singleplayerlobby",
             ["tourneys"] = $"{Base}/tourney/",
         },
-        host_info = new { container_name = "kards-backend-LIVE", host_address = "127.0.0.1", host_name = "cometkards" },
+        host_info = new { container_name = "kards-backend-local", host_address = "127.0.0.1", host_name = "localhost" },
         server_time = DateTime.UtcNow.ToString("yyyy.MM.dd-HH.mm.ss"),
         service_name = "kards-backend",
         tenant_name = "1939-kardslive",
@@ -191,7 +191,7 @@ export class AppController {
         singleplayerlobby: `${BASE}/singleplayerlobby`,
         tourneys: `${BASE}/tourney/`,
       },
-      host_info: { container_name: 'kards-backend-LIVE', host_address: '127.0.0.1', host_name: 'cometkards' },
+      host_info: { container_name: 'kards-backend-local', host_address: '127.0.0.1', host_name: 'localhost' },
       server_time: formatServerTime(new Date()),
       service_name: 'kards-backend',
       tenant_name: '1939-kardslive',

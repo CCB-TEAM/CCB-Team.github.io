@@ -105,7 +105,7 @@ KismetDecompiler --input  <蓝图导出目录> \
 |---|---|---|---|
 | 1 | ✅ **已确认：是绝对地址** | 官服 `GET /` 的 `endpoints.*` 与 `/session` 的 `*_url` 全部是含 host 的绝对 URL | 见 [附录 F](/private-server/appendix/live-probe) |
 | 2 | ✅ **已确认：取第二段** | 官服 `root` = `https://kards.live.1939api.com`，点分第二段正是 `live` | 见 [附录 F](/private-server/appendix/live-probe) |
-| 3 | ✅ **已确认：两者都不是，是 `card_type`** | 官服 library 是**裸数组**，主键是资产名 `card_type`，另有 `count` / `gold_card_count` / `player_id` / `recently_crafted_count`，**没有 `id` 也没有 `deck_id`** | 见 [附录 F](/private-server/appendix/live-probe) |
+| 3 | ✅ **已确认：两者都不是，是 `card_type`** | 官服 library 外层是 `{cards, new_cards}`（与正文一致），条目主键是资产名 `card_type`，另有 `count` / `gold_card_count` / `player_id` / `recently_crafted_count`，**没有 `id` 也没有 `deck_id`** | 见 [附录 F](/private-server/appendix/live-probe) |
 | 4 | `action_data` 的确切形状 | 官服只读接口不涉及，仍需抓**对局中**的包 | 用一个动作分别按两种形状提交，看客户端是否都认 |
 | 5 | **基本确认：不校验签名** | 官服 token 用 **RS256**；私服手搓的 HS256/无签名令牌能用，说明客户端不验签。另：claim 里 `provider` 是 `device`，**请求里才是 `device_id`** | 见 [附录 F](/private-server/appendix/live-probe) |
 | 6 | ✅ **已确认：取客户端项目版本** | 官服 `versions = ["Kards 1.60"]`，而登录 DTO 的 `version` 是 `Kards 1.48.24871.launcher`，该组合**登录成功** → 闸门比的不是 DTO 的 `version` 字段 | 见 [附录 F](/private-server/appendix/live-probe) |

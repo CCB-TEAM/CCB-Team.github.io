@@ -107,7 +107,7 @@ public string GetAddressHttpR() => $"http://{ip}:{portHttp}";      // 下发给�
 | 9 | WS 握手失败 | 反代没转发 `Upgrade`/`Connection`；或服务端没回 `Sec-WebSocket-Protocol: ws` | [09](/private-server/09-websocket) |
 | 10 | 断线重连后无限循环 | `GET /matches/v2/reconnect` 没有可重连对局时返回了 `{}`；或重连后仍判了投降 | [09](/private-server/09-websocket) |
 | 11 | 胜负不结算 | 判负时没把 `status` 置 `finished`、双方 `player_status_*` 置 `end_match`（`DamageCard` 补刀只是旧 JS 实现的兼容做法，非必需） | [08](/private-server/08-match-actions) |
-| 12 | 收藏界面空、卡组编辑器打不开 | `/players/{id}/library` 没实现；或条目缺 `card_type`（官服以**资产名**为主键，响应里**没有 `id` 字段**，且顶层是裸数组） | [05](/private-server/05-player-data) · [F](/private-server/appendix/live-probe) |
+| 12 | 收藏界面空、卡组编辑器打不开 | `/players/{id}/library` 没实现；或条目缺 `card_type`（官服以**资产名**为主键，条目里**没有卡牌数字 `id`**，只有 `player_id`） | [05](/private-server/05-player-data) · [F](/private-server/appendix/live-probe) |
 | 13 | 切换国家时卡背被清 | 装备去重只比了 `slot`，没比 `(slot, faction)` | [05](/private-server/05-player-data) |
 | 14 | 偶发 401 | token 存的是"最后一次登录"的，旧 token 立刻失效（单点登录）；多端测试时会互相踢 | [03](/private-server/03-session) |
 | 15 | 时间字段解析报错 | 三种格式混用：ISO 6 位小数（卡组时间）、`2025.07.06-04.06.03`（`server_time`）、`yyyy-MM-dd HH:mm:ss`（items 的 `date`） | [05](/private-server/05-player-data) |

@@ -115,3 +115,4 @@ nest new mykards      # 或 npm init -y && npm i express ws
 - [附录 D · 自检脚本与常量速查](/private-server/appendix/smoke-test) —— 常量速查表 + 可复制的 PowerShell 冒烟脚本（10 步逐步 `✓`/`✗` 并指向对应章节）
 - [附录 E · 复现指南与待验证清单](/private-server/appendix/open-questions) —— 四条取证路径与复现步骤，以及 **10 项尚未验证的推断**（每项附一分钟验证法）
 - [附录 F · 官服实测对照](/private-server/appendix/live-probe) —— 直接调用 `kards.live.1939api.com` 的实测结果：API Key 前置头、真实登录 DTO（`provider: "device_id"`）、`/session` 的 70 个扁平字段、**150 键 `server_options` 全清单**、RS256 令牌 claim、library 与卡组码真实形态，以及**六处对既有说法的纠正**
+- [附录 G · 端点矩阵与数据复用](/private-server/appendix/endpoint-matrix) —— 22 个端点的方法/形态/元素字段一张表；**哪些结构被复用**（会话内联的卡组、赛事、`current_user` = JWT claim）；六个"同名不同形"的键；空响应的三种写法（`[]` / `null` / 空体）

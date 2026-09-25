@@ -217,14 +217,17 @@ roles, iat, exp, jti, iss, tier, language, client_id, player_id
 
 这解释了为什么三套参考实现手工拼的 token 能用：**客户端不校验签名**（与[附录 E](/private-server/appendix/open-questions) 第 5 条的推断一致），`provider: "device"` 也正是从 claim 里抄来的。
 
-## 7. 卡牌库：**裸数组**，主键是 `card_type`
+## 7. 卡牌库：对象 `{cards, new_cards}`，条目主键是 `card_type`
 
 ```jsonc
-// GET /players/{id}/library   → 顶层就是数组
-[
-  { "card_type": "card_event_carpet_bombing", "count": 1, "gold_card_count": 0,
-    "player_id": <打码>, "recently_crafted_count": 0 }
-]
+// GET /players/{id}/library
+{
+  "cards": [
+    { "card_type": "card_event_carpet_bombing", "count": 1, "gold_card_count": 0,
+      "player_id": <打码>, "recently_crafted_count": 0 }
+  ],
+  "new_cards": []
+}
 ```
 
 | 字段 | 说明 |
@@ -234,7 +237,11 @@ roles, iat, exp, jti, iss, tier, language, client_id, player_id
 | `player_id` | 该行归属的玩家 |
 | `recently_crafted_count` | 近期合成数（UI 高亮） |
 
-**修正项**：正文给的形态是 `{ "cards": [ … ] }` 且含一个数字 `id` 字段；官服是**裸数组**、且**没有 `id`**——卡牌是用 `card_type` 资产名标识的。数字 `id` 只存在于客户端内置的卡组码映射表（`deckCodeIDsTable`）里，用于卡组码那两个字符，不需要出现在接口响应中。
+**修正项**：条目里**没有 `id` 字段**（正文示例曾给 `"id": 1024`）——卡牌是用 `card_type` 资产名标识的，数字编码只存在于客户端内置的卡组码映射表（`deckCodeIDsTable`）里。外层 `{ "cards": […], "new_cards": [] }` 与正文一致，**没有错**。
+
+::: danger 本页曾把这里写成"裸数组"，那是我的误读
+本页初版声称官服返回的是顶层数组。实际是自己诊断脚本的输出（打印的是 `cards` 属性的值，而非响应体本身）被误读。经复测：**外层是对象**，字段为 `cards` / `new_cards`。特此更正，并把第 5 章改回原样（仅保留 `id` → `player_id` 的修正）。
+:::
 
 ## 8. 卡组头与卡组码：实测语法
 

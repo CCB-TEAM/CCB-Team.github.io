@@ -10,14 +10,17 @@ title: 05 · 玩家数据、物品与图书馆
 
 返回全量卡牌清单。客户端据此渲染收藏、判断"你有几张"、以及在卡组编辑器里校验卡组码。
 
-官服实测的响应是一个**裸数组**（没有 `{ "cards": … }` 外壳），每条以 `card_type` 为主键：
+官服实测的响应外层是**对象**（`cards` + `new_cards`），条目以 `card_type` 为主键：
 
 ```jsonc
-// GET /players/{id}/library   → 顶层就是数组
-[
-  { "card_type": "card_unit_1st_infantry", "count": 40, "gold_card_count": 0,
-    "player_id": 1, "recently_crafted_count": 0 }
-]
+// GET /players/{id}/library
+{
+  "cards": [
+    { "card_type": "card_unit_1st_infantry", "count": 40, "gold_card_count": 0,
+      "player_id": 1, "recently_crafted_count": 0 }
+  ],
+  "new_cards": []
+}
 ```
 
 | 字段 | 含义 |
@@ -28,8 +31,8 @@ title: 05 · 玩家数据、物品与图书馆
 | `player_id` | 该行归属的玩家 |
 | `recently_crafted_count` | 近期合成数（用于 UI 高亮，可全 0） |
 
-::: warning 官服没有数字 `id` 字段
-早期版本的本文曾给出带 `"id": 1024` 的示例，那是**误读**：官服响应里只有 `card_type` 资产名，卡牌的数字编码只存在于**客户端内置**的卡组码映射表里（见下）。自建服务发 `{ "cards": [ … ] }` 外壳或多余字段客户端通常也能忍，但**以裸数组 + `card_type` 为准**——实测依据见[附录 F](/private-server/appendix/live-probe)。
+::: warning 条目里没有数字 `id`，是 `player_id`
+本文早期示例给过 `"id": 1024`，那是**误读**：官服条目只有 `card_type` 资产名与 `player_id`，**没有卡牌数字 `id`**。数字编码只存在于**客户端内置**的卡组码映射表里（见下），不需要出现在接口响应中。外层 `{ "cards": […], "new_cards": [] }` 形态与官服一致。
 :::
 
 ::: warning `id` 必须和卡组码表对得上
