@@ -34,7 +34,9 @@ httpApp.MapUserEndpoints();
 
 握手时带 `Authorization` 头，取法与 HTTP 一致（裸 token 或 `JWT `/`Bearer ` 前缀）：
 
-```csharp
+::: code-group
+
+```csharp [C#]
 // C#：升级前先验，失败直接 401（别升级完再关，客户端会重连风暴）
 var token = ExtractToken(ctx.Request.Headers.Authorization.ToString());
 var user = token.Length > 0 ? auth.GetUserByToken(token) : null;
@@ -45,7 +47,7 @@ using var socket = await ctx.WebSockets.AcceptWebSocketAsync("ws");   // ← 子
 hub.Register(user.Id, socket);
 ```
 
-```typescript
+```typescript [TypeScript]
 // TS：ws 库的 connection 回调里查库
 const wss = new WebSocket.Server({ port: ws_port });
 wss.on('connection', async (ws, req) => {
@@ -57,6 +59,8 @@ wss.on('connection', async (ws, req) => {
   ws.on('close', () => { delete clients[user.id]; onDisconnect(user.id); });
 });
 ```
+
+:::
 
 ::: warning 子协议必须回 `ws`
 Go 的 upgrader 声明了 `Subprotocols: []string{"ws"}`。客户端请求 `Sec-WebSocket-Protocol: ws` 时，服务端**必须在握手响应里回同一个值**，否则部分客户端直接断开。C# 用 `AcceptWebSocketAsync("ws")`，Node 用 `new WebSocket.Server({ handleProtocols: () => 'ws' })`。
@@ -89,7 +93,9 @@ Go 的 upgrader 声明了 `Subprotocols: []string{"ws"}`。客户端请求 `Sec-
 | `notification` | C→S→C | 只在 `message` 是 `websocketcheck` / `matchaction` / `im_here` 时转发 |
 | `disconnect` | S→C | 服务端主动踢人，`message` 是给玩家看的理由 |
 
-```csharp
+::: code-group
+
+```csharp [C#]
 // C#：消息循环
 while (socket.State == WebSocketState.Open)
 {
@@ -119,7 +125,7 @@ while (socket.State == WebSocketState.Open)
 }
 ```
 
-```typescript
+```typescript [TypeScript]
 // TS：同一个 switch
 ws.on('message', async (raw: Buffer) => {
   const msg = JSON.parse(raw.toString());
@@ -143,6 +149,8 @@ ws.on('message', async (raw: Buffer) => {
   }
 });
 ```
+
+:::
 
 ::: tip `im_here` 是"我在线"广播
 对手客户端靠它判断"对面还在牌桌上"。**注意 `im_here` 的 `context` 必须清空**，而 `matchaction` 的 `context` 要原样带上（里面是 `match_id`）——两个实现的代码都在这一点上做了特判，照抄即可。

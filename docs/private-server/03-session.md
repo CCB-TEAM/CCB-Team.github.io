@@ -193,7 +193,9 @@ Go 实现在验签之后多做了一步：`user.PlayerJWT != tokenStr → 401`�
 
 所有非白名单接口都要过这一关。白名单只有三个：`/`、`/session`、`/.com/config`。
 
-```csharp
+::: code-group
+
+```csharp [C#]
 // Middleware/JwtAuthMiddleware.cs
 public class JwtAuthMiddleware(RequestDelegate next, AuthService auth, UserStoreService users)
 {
@@ -261,6 +263,8 @@ export class AuthGuard implements CanActivate {
   }
 }
 ```
+
+:::
 
 ## 封禁
 

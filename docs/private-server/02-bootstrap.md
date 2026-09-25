@@ -84,7 +84,7 @@ func GetConfig(c *gin.Context) {
 
 ::: code-group
 
-```csharp [C# / ASP.NET Core]
+```csharp [C#]
 // Program.cs
 var builder = WebApplication.CreateSlimBuilder(args);
 builder.WebHost.UseUrls("http://0.0.0.0:5231");   // 监听全网卡，下发地址另算
@@ -148,7 +148,7 @@ app.MapGet("/.com/config", () => Results.Json(new
 app.Run();
 ```
 
-```typescript [TypeScript / NestJS]
+```typescript [TypeScript]
 // src/app.controller.ts
 import { Controller, Get, Req } from '@nestjs/common';
 import { BASE } from './config';
@@ -221,9 +221,11 @@ export const formatServerTime = (d: Date) =>
 
 写中间件时注意顺序：**必须在 `UseRouting()`/路由注册前生效**，否则已经匹配失败了再改写没用。
 
-**2. `Content-Type` 不能带 `charset`。** 客户端解析对 `application/json; charset=utf-8` 不友好。三个实现各有一招：
+**2. `Content-Type` 不能带 `charset`。** 客户端解析对 `application/json; charset=utf-8` 不友好。各有一招：
 
-```csharp
+::: code-group
+
+```csharp [C#]
 // C#：中间件里把 charset 抹掉
 app.Use(async (ctx, next) => {
     ctx.Response.OnStarting(() => {
@@ -236,7 +238,7 @@ app.Use(async (ctx, next) => {
 });
 ```
 
-```typescript
+```typescript [TypeScript]
 // TS：Express 层直接摘掉
 server.use((req, res, next) => {
   const json = res.json.bind(res);
@@ -244,6 +246,8 @@ server.use((req, res, next) => {
   next();
 });
 ```
+
+:::
 
 ---
 

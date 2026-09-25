@@ -37,17 +37,21 @@ title: 05 · 玩家数据、物品与图书馆
 
 两个接口名都要实现，老版本客户端请求 `librarynew`：
 
-```csharp
+::: code-group
+
+```csharp [C#]
 app.MapGet("/players/{id}/library",    (string id, PlayerLibraryService lib) => Results.Ok(lib.Library));
 app.MapGet("/players/{id}/librarynew", (string id, PlayerLibraryService lib) => Results.Ok(lib.Library));
 ```
 
-```typescript
+```typescript [TypeScript]
 @Get('players/:id/library')
 library(@Param('id') id: string) {
   return { cards: LIBRARY, new_cards: [] };   // LIBRARY 由 deckCodeIDsTable 生成
 }
 ```
+
+:::
 :::
 
 ## 物品与装备 `/items/{id}`
@@ -94,14 +98,18 @@ DELETE /players/{id}/heartbeat   → {}   # 下线
 
 两个方法都注册到同一路由，返回空对象即可：
 
-```csharp
+::: code-group
+
+```csharp [C#]
 app.MapMethods("/players/{id}/heartbeat", new[] { "PUT", "DELETE" }, (string id) => Results.Ok(new EmptyResponseDto()));
 ```
 
-```typescript
+```typescript [TypeScript]
 @Put('players/:id/heartbeat')  @Delete('players/:id/heartbeat')
 heartbeat() { return {}; }
 ```
+
+:::
 
 真正的在线状态由 **WebSocket 连接**维护（第 9 章）：连着就是在线，断开就下线并判负。心跳只是保活，不影响业务。
 

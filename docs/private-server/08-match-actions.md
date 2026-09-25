@@ -36,7 +36,9 @@ title: 08 · 对局动作、调度与结算
 | `action == "end-match"` | `value.winner_side` 决定胜负 |
 | 其它 | 原样入库，编号后等待对手拉取 |
 
-```csharp
+::: code-group
+
+```csharp [C#]
 // C#：解密 → 分派 → 入库
 var action = codec.Decrypt(body.A);                     // 第 4 章的 Decode
 
@@ -55,7 +57,7 @@ match.CurrentActionId++;
 return Results.Text("OK");
 ```
 
-```typescript
+```typescript [TypeScript]
 // TS：同样的分派
 processMatch(matchId: number, action: MatchAction, player: User) {
   const match = MatchService.matchedPairs[matchId];
@@ -73,6 +75,8 @@ processMatch(matchId: number, action: MatchAction, player: User) {
   return 'OK';
 }
 ```
+
+:::
 
 ::: warning 动作要存进对手的列表
 `left_actions` 里放的是**发给左侧玩家看的动作**，也就是**右侧玩家提交的**。命名很容易反：

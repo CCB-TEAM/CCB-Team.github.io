@@ -24,7 +24,29 @@ title: 07 · 大厅、匹配与开局
 
 实现就是"两个坑位一凑即成对"（`extra_data` 为空进主队列，非空进第二队列，`battle_code:` 前缀单独分桶）：
 
-```typescript
+::: code-group
+
+```csharp [C#]
+// C#：队列在内存里，配对了就建 MatchInfo
+private readonly List<LobbyPlayer> _queue = new();
+
+public bool Join(LobbyPlayer p)
+{
+    if (p.ExtraData.StartsWith("battle_code:"))
+    {
+        if (!_codeBuckets.TryGetValue(p.ExtraData, out var bucket))
+            _codeBuckets[p.ExtraData] = bucket = new List<LobbyPlayer>();
+        bucket.Add(p);
+        if (bucket.Count >= 2) Pair(bucket[0], bucket[1], bucket);   // 取下并移除
+        return true;
+    }
+    _queue.Add(p);
+    if (_queue.Count >= 2) { Pair(_queue[0], _queue[1], _queue); }
+    return true;
+}
+```
+
+```typescript [TypeScript]
 // TypeScript 写法示意（队列语义以 C# / Go 实现为准）
 async joinMatch(lobbyPlayer: LobbyPlayer) {
   const user = JSON.parse(await users.get('' + lobbyPlayer.player_id));
@@ -51,25 +73,7 @@ private pair(left: LobbyPlayer, right: LobbyPlayer) {
 }
 ```
 
-```csharp
-// C#：队列在内存里，配对了就建 MatchInfo
-private readonly List<LobbyPlayer> _queue = new();
-
-public bool Join(LobbyPlayer p)
-{
-    if (p.ExtraData.StartsWith("battle_code:"))
-    {
-        if (!_codeBuckets.TryGetValue(p.ExtraData, out var bucket))
-            _codeBuckets[p.ExtraData] = bucket = new List<LobbyPlayer>();
-        bucket.Add(p);
-        if (bucket.Count >= 2) Pair(bucket[0], bucket[1], bucket);   // 取下并移除
-        return true;
-    }
-    _queue.Add(p);
-    if (_queue.Count >= 2) { Pair(_queue[0], _queue[1], _queue); }
-    return true;
-}
-```
+:::
 
 ::: warning 队列里的三方竞争
 `POST /lobbyplayers` 和随后的轮询在不同请求里并发发生。**入队/配对/取出必须加锁**（C# 用 `SemaphoreSlim` 或 `lock`，TS 单线程天然安全但要小心 `await` 之间的重入）。参考的 Go 实现特意为生成开局数据加了双重检查锁：
