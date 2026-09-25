@@ -119,6 +119,12 @@ export default defineConfig({
           ],
         },
         {
+          text: '进阶专题',
+          items: [
+            { text: '13 · 人机对局与 actions 协议', link: '/private-server/13-bot-and-actions' },
+          ],
+        },
+        {
           text: '附录 · 注解、自检、复现与实测',
           items: [
             { text: 'A · UHT 结构体与枚举', link: '/private-server/appendix/uht-structs' },

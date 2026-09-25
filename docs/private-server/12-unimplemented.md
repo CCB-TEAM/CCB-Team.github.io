@@ -157,7 +157,72 @@ struct FDMission { int32 ID; FString mission_id; int32 counter; int32 Slot; bool
 4. **先发最小数据** —— 空集合（`[]` 或对应空对象）先让界面不崩，再逐字段填，每填一个看一眼界面。
 5. **标注证据强度** —— 实测 / 客户端结构体 / 推断，三者分清（本系列每条结论都标了）。
 
-## 六、边界
+## 六、自己写：未实现端点的最小示例
+
+这些端点没有服务端样本，但形态是已知的——下面是**本系列自己写的**最小实现，重点全在"**容器别给错**"（第二节的实测归类）。
+
+::: code-group
+
+```csharp [C#]
+// 裸数组的三兄弟：战役、成就、卡牌包
+app.MapGet("/campaign/{id}",             (string id) => Results.Ok(Array.Empty<object>()));
+app.MapGet("/players/{id}/achievements", (string id) => Results.Ok(Array.Empty<object>()));
+app.MapGet("/players/{id}/packs",        (string id) => Results.Ok(Array.Empty<object>()));
+
+// 卡组列表：裸数组，元素与 session.decks.headers[] 同构（会话已内联，端点是给写操作用的）
+app.MapGet("/players/{id}/decks", (string id, DeckStore decks) => Results.Ok(decks.Headers(id)));
+
+// 对象包装的两个：每日任务、锦标赛
+app.MapGet("/players/{id}/dailymissions", (string id) =>
+    Results.Ok(new { missions = Array.Empty<object>() }));
+app.MapGet("/tourney/", () =>
+    Results.Ok(new { all_knockout_tourneys = Array.Empty<object>() }));
+
+// 交易流水：一组计数器聚合（注意与 /session 的顶层货币字段是两套表达）
+app.MapGet("/store/txn", (string id, Wallet w) => Results.Ok(new
+{
+    gold = w.Gold(id), diamonds = w.Diamonds(id), packs = w.Packs(id),
+    campaigns = 0, cards = 0, decks = 0, draft_admissions = 0, equipment = 0, resources = 0
+}));
+
+// 权益清单：扁平数组，外观界面用它判断"我有没有这个表情/卡背"
+app.MapGet("/entitlements/{id}", (string id, ItemStore items) =>
+    Results.Ok(items.Owned(id).Select(i => new { entitlementType = i.Kind, name = i.ItemId })));
+```
+
+```go [Go]
+// 空集合优先：客户端是按容器类型解析的，容器错了才出事，字段少没事
+func GetCampaign(c *gin.Context)     { c.JSON(http.StatusOK, []any{}) } // 裸数组
+func GetAchievements(c *gin.Context) { c.JSON(http.StatusOK, []any{}) } // 裸数组
+func GetPacks(c *gin.Context)        { c.JSON(http.StatusOK, []any{}) } // 裸数组
+
+// 卡组列表：与 session 内联的 decks.headers 同构
+func GetDecksEndpoint(c *gin.Context) { c.JSON(http.StatusOK, deckHeaders(c)) }
+
+// 对象包装
+func GetDailyMissions(c *gin.Context) {
+    c.JSON(http.StatusOK, gin.H{"missions": []any{}})
+}
+func GetTourneys(c *gin.Context) {
+    c.JSON(http.StatusOK, gin.H{"all_knockout_tourneys": []any{}})
+}
+
+// 交易流水：计数器聚合
+func GetTransactions(c *gin.Context) {
+    c.JSON(http.StatusOK, gin.H{
+        "gold": 0, "diamonds": 0, "packs": 0, "campaigns": 0,
+        "cards": 0, "decks": 0, "draft_admissions": 0, "equipment": 0, "resources": 0,
+    })
+}
+```
+
+:::
+
+::: tip 写操作的实现顺序
+`campaign.reset` / `upgrade` / `strategy` / `victory` / `abort_victory` 都是写操作：**先让你的 GET 能返回一条结构合法的 `FCampaign`**，再实现写操作去改它——顺序反了会出现"写成功但界面不显示"，很难查。
+:::
+
+## 七、边界
 
 - **写操作一律未实测**：`campaign.*`、`crate/claim`、`store/*/txn`、`email/set`——它们会改账号数据或产生真实交易。要验证请在自己私服上做。
 - 本章所有"官服实测"值来自只读 GET，采集方式与隐私处理见[附录 F](/private-server/appendix/live-probe)。

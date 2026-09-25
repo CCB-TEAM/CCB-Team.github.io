@@ -247,7 +247,7 @@ roles, iat, exp, jti, iss, tier, language, client_id, player_id
 
 ```jsonc
 // decks.headers[i]
-{ "id": 159333617, "name": "…", "player_id": <打码>,
+{ "id": <deck_id>, "name": "…", "player_id": <打码>,
   "main_faction": "japan", "ally_faction": "germany",      // 字符串，不是数字
   "card_back": "cardback_starter_japan", "favorite": false,
   "deck_code": "%%31|2S2Z4p5u6B6C6K6Y7179;2O3L4n5N5Z6L6Q6R6x7l7m7o7q;72;~;;;|6l1g",

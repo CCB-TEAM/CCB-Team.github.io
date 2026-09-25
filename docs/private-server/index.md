@@ -106,6 +106,7 @@ nest new mykards      # 或 npm init -y && npm i express ws
 10. [部署与兼容性坑](/private-server/10-deploy) —— 反代、IP 重定向、字段顺序陷阱
 11. [物品、装备与卡牌库](/private-server/11-items-library) —— `items` / `library` 的官服实测形态、客户端结构体对照、`deck_id` 为什么不下发
 12. [参考实现没覆盖的端点](/private-server/12-unimplemented) —— 战役 / 抽卡赛 / 锦标赛 / 成就 / 任务的实测形态，以及"操作名即文件名"的客户端结构体索引
+13. [人机对局与 actions 协议](/private-server/13-bot-and-actions) —— `singleplayerlobby`、训练机器人特征、以及 `actions` 数组里其实是 codec 包
 
 ## 附录（产物注解、自检、复现与官服实测）
 

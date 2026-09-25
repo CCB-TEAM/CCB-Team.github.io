@@ -239,6 +239,12 @@ if (action.ActionType == "XActionEndOfTurn" && match.Ex == "pw")
 
 AI 玩家 id 固定用 `-9178`，卡组用一份硬编码的卡组码——**服务端不需要真的会下棋**，只要让回合流转起来，人机对战就能打。
 
+::: tip 人机的官服实测形态见第 13 章
+上面这段来自 `fyserver` 的实现。**官服实测**（进局端点、机器人特征、开局载荷字段）在[第 13 章](/private-server/13-bot-and-actions)，并顺带解开了"`actions` 数组里到底是 JSON 还是编码串"——是 **codec 包**。
+
+两点提醒：`Ex == "pw"` 是 `fyserver` 的**内部标记，不是线上值**（客户端从不发 `pw`）；官方训练机器人的 id 是 `-2020`、名字是 `"Fischer"`。
+:::
+
 ---
 
 动作通道是 HTTP 轮询，那 WebSocket 干嘛用的？下一章。
