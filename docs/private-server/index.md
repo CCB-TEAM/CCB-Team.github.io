@@ -101,7 +101,7 @@ nest new mykards      # 或 npm init -y && npm i express ws
 5. [玩家数据、物品与图书馆](/private-server/05-player-data) —— library / items / heartbeat
 6. [卡组与卡组码](/private-server/06-decks) —— `%%` 卡组码的位段与倍数规则
 7. [大厅、匹配与开局](/private-server/07-matchmaking) —— 队列、`matches/v2`、发牌
-8. [对局动作、调度与结算](/private-server/08-match-actions) —— actions 轮询/提交、mulligan、胜负
+8. [对局同步与结算](/private-server/08-match-actions) —— actions 轮询/提交、mulligan、胜负
 9. [WebSocket 实时通道](/private-server/09-websocket) —— channel 一览（实测 6 个）与帧格式
 10. [部署与兼容性坑](/private-server/10-deploy) —— 反代、IP 重定向、字段顺序陷阱
 11. [物品、装备与卡牌库](/private-server/11-items-library) —— `items` / `library` 的官服实测形态、客户端结构体对照、`deck_id` 为什么不下发

@@ -101,7 +101,7 @@ export default defineConfig({
           text: '对战',
           items: [
             { text: '07 · 大厅、匹配与开局', link: '/private-server/07-matchmaking' },
-            { text: '08 · 对局动作、调度与结算', link: '/private-server/08-match-actions' },
+            { text: '08 · 对局同步与结算', link: '/private-server/08-match-actions' },
             { text: '09 · WebSocket 实时通道', link: '/private-server/09-websocket' },
           ],
         },
