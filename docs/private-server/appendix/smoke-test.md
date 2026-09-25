@@ -50,8 +50,17 @@ tableIndex  dataLength   actionId        key                cipher
 | `match_type` | `battle` / `draft` / `training` |
 | `winner_side` / `action_side` / `start_side` | `left` / `right` |
 | `location`（开局） | `deck_left` `deck_right` `hand_left` `hand_right` `board_hqleft` `board_hqright` |
-| 人机对手 | `player_id` = `-9178`（参考实现固定值） |
+| 人机对手 | 参考实现固定 `-9178`；**官服实测是负数族**（`-2000`/`-2010`/`-2020`/`-2030`/`-2040`），名字 `"Fischer"`（[第 13 章](/private-server/13-bot-and-actions)） |
 | 卡组码 | 以 `%%` 开头 |
+
+::: tip 两条"强断言"——实测得出，建议写进自检脚本
+| 断言 | 依据 |
+|---|---|
+| **手牌 + 牌库的 `location_number` 在开局时连续覆盖 `0..38`**（手牌 `0..N-1`、牌库接 `N..38`，`N` = 手牌数 4 或 5） | 抓包 82 张牌面逐一核对（[附录 H](/private-server/appendix/client-capture) §5） |
+| **换牌后牌库 `location_number` 从 0 重新编号，且替补牌的槽位号 = 被弃牌的槽位号** | [第 13 章](/private-server/13-bot-and-actions) §4 三次换牌实测 |
+
+第一条能抓出"发牌号段给错"，第二条能抓出"换牌后手牌错位"——后者**只在换过牌的局里出现**，靠肉眼很难复现。
+:::
 
 ::: tip `server_options` 是**字符串**，不是对象
 自检脚本必须把它当字符串取出再**二次** `ConvertFrom-Json`。直接当对象解析会失败——这是新手最常写错的一处。详见[附录 C](/private-server/appendix/client-flow)。

@@ -247,15 +247,27 @@ struct FActionValue2 { FString Name; int32 Value; FString Text; };
 struct FSubAction    { FString Name; TArray<FActionValue2> Values; };
 ```
 
-::: warning `action_data`：结构体是数组，实现却发对象
-按 UHT，`action_data` 应是 `[{Name,Value,Text}, …]`；但实现发的是**键值对象**：
+::: warning `action_data`：结构体是数组，真机发的是对象
+按 UHT，`action_data` 应是 `[{Name,Value,Text}, …]`；但真机与实现发的都是**键值对象**：
 
 ```jsonc
-// Go / fyserver（C#）都用命名键
-"action_data": { "side": "left", "75": "20" }
+// 真机抓包（左右侧的数字键不同）与两套参考实现一致
+"action_data": { "side": "left", "56": "20" }      // 右侧是 "75"
 ```
 
 说明客户端那层自定义 JSON 转换做了宽容处理。**照抄抓包到的形状，别按结构体自行设计**——这是最容易做出"客户端不认"的动作的地方。
+:::
+
+::: warning 结构体**缺**两个真机必备字段
+把 UHT 结构体与真机明文对齐后，有两处对不上（见[第 13 章](/private-server/13-bot-and-actions)第七节）：
+
+| 字段 | UHT 结构体 | 真机明文 |
+|---|---|---|
+| `turn_number` | **没有** | **有**（`XStartOfGame` 是 0，之后每个开始/结束回合占一个 turn） |
+| `local_subactions` | **没有** | **有**（每个提交都带，值 `1`） |
+| `sub_actions` | `TArray<FSubAction>` | 真机回合类动作里**没有** |
+
+结论：**不要拿这个结构体当解析契约**。它来自客户端本地的动作对象，而线路上的 JSON 是另一层序列化——以[附录 H](/private-server/appendix/client-capture) 的抓包样本为准。
 :::
 
 ## 4. 卡组与卡库

@@ -88,7 +88,7 @@ language, payment, player_id, provider, roles, tier, user_id, user_name
 | `decks` | `/session` → **对象** `{ "headers": [ … ] }` | `GET /players/{id}/decks` → **裸数组** `[ … ]` |
 | `server_time` | `/session` → `2026.09.25-06.03.07`（点分） | `/` → `2026-09-25T06:00:00.420343Z`（ISO 6 位小数） |
 | `cards` | `library.cards` = **卡牌行数组** | `transactions.cards` = **数量**；`my_draft.cards` = `{card_count, total_cards}` |
-| `id` | 卡组 `id` = 卡组数字 ID | 卡牌行里**没有 `id`**，只有 `player_id` |
+| `id` | 卡组 `id` = 卡组数字 ID | 卡牌行里官服**没有 `id`**（只有 `player_id`）；私服（fyserver）会多回一个数字 `id`——**客户端两种都不依赖** |
 | `date` | `my_items.date` = 整份物品的时间戳 | `missions[].create_date` / `completed_date` = 单条任务时间 |
 | `currency` | `/session.currency` = `"USD"` | `/store/v2/.currency` = `"USD"`（**实测两者都是字符串**，未发现差异） |
 
@@ -110,14 +110,52 @@ language, payment, player_id, provider, roles, tier, user_id, user_name
 正文第 7 章与[附录 D](/private-server/appendix/smoke-test) 曾断言"必须返回**字符串** `null`，JSON `null` 会让客户端卡在排队转圈"。**官服实测返回的正是 JSON `null`（4 字节 `null`）**，而客户端在官服上工作正常——所以两种都能过。真正的禁忌只有一个：**别返回 `{}` 或 `[]`**。附录 D 的断言已据此更正。
 :::
 
-## 7. 本页未覆盖
+## 7. 对局内端点（真机抓包 + 官服实测）
 
-保持边界清楚——以下都**没有**实测，因为它们会改动账号数据或需要真实对局：
+第 3 节的矩阵只覆盖**只读接口**。对局内的端点来自两条独立证据：**真机客户端**的完整调用序列（[附录 H](/private-server/appendix/client-capture)）与**官服**实测。
+
+| 端点 | 方法 | 状态 | 返回形态 | 备注 |
+|---|---|---|---|---|
+| `/singleplayerlobby` | POST | 200 | 开局载荷 | 人机进局（正文第 13 章） |
+| `/matches/v2/` | GET | 200 | 开局载荷 | **顶层只有 `match_and_starting_data`**；私服会多一个 `local_subactions` |
+| `/matches/v2/{id}` | GET | 200 | **裸文本** `running` / `finished` | 保活 **兼**"我方载入完成"信号 |
+| `/matches/v2/reconnect` | GET | 200 | **裸文本** `null` | 无可重连对局 |
+| `/matches/v2/{id}/actions` | PUT | 200 | `{actions, match, opponent_polling}` | 轮询；无新动作时 `actions` **整个省略**；`match` 只有 3 个字段 |
+| `/matches/v2/{id}/actions` | POST | 200 | `OK`（纯文本） | 提交；**官服按真机格式也回 400 `ACTION_ERROR`**（门槛未解，见第 13 章第九节） |
+| `/matches/v2/{id}/mulligan` | POST | 200 | `{ai_error, deck, replacement_cards}` | 换牌；**`PUT` 返回 405** |
+| `/matches/v2/{id}/mulligan/{location}` | GET | 200 | 换牌结果，未换牌时是**空对象 `{}`** | `location` = `left` / `right` |
+| `/matches/v2/{id}` | PUT | 200 | `OK` | **会话动作**（`{a: 包}`，包内 `{side, action, value}`）：投降/结束 |
+| `/matches/v2/{id}/post` | GET | 200 | `{faction, winner}` | 赛后面板；`faction` 首字母大写（来源：私服抓包） |
+
+::: tip 三个"看着像 JSON 其实不是"的响应
+`GET /matches/v2/{id}`、`GET /matches/v2/reconnect` 返回的是**裸文本**（`running`、`null`），`POST .../actions` 返回 `OK`——都**不是 JSON**。写客户端兼容层时别一律 `json.loads`。
+:::
+
+## 8. 客户端会调、但私服没实现的端点（真机抓包）
+
+这张表来自真机客户端打到自建私服的 404 清单——**它们是"客户端期望存在"的证据，不代表官服一定有**：
+
+| 端点 | 私服 | 官服 | 客户端反应 |
+|---|---|---|---|
+| `/players/{id}/achievements` | 404 | 200 `[]`（空集合） | 忽略，继续 |
+| `/players/{id}/dailymissions` | 404 | 200 `{missions}` | 忽略，继续 |
+| `/players/{id}/packs` | 404 | 200 `[]` | 忽略，继续 |
+| `/store/txn/dlc` | 404 | 未实测 | 忽略，继续 |
+| `/players/{codec 包}` | 404 | 未实测 | 忽略，继续（**PUT**，`accept-eula` 等玩家事件；玩家标识编码在 URL 路径里） |
+
+::: warning 404 不致命，但会浪费时间
+上表这些 404 **不会**让客户端崩——它会继续往下走。所以排查"进不去游戏"时**别盯着 404 看**，真正卡住流程的是**返回值形态不对**的端点（比如 `/matches/v2/` 该给 `null` 却给了 `[]`）。
+:::
+
+## 9. 本页未覆盖
+
+保持边界清楚——以下都**没有**实测，因为它们会改动账号数据、需要更长对局，或仍无解：
 
 | 项 | 原因 |
 |---|---|
 | `campaign.*` 的五个写操作 | 会推进/重置战役进度 |
 | `/store/v2/txn`（购买）与 `/email/set` | 会产生真实交易 |
-| 对局中的 `action_data`、WS 帧 | 需要进对局并抓包，本页只用只读接口 |
+| **官服动作提交的格式门槛** | 按真机格式提交仍被 400 拒，见[第 13 章](/private-server/13-bot-and-actions)第九节 |
+| 出牌/攻击类动作的 `action_data` 字段 | 现有真机样本只有 4 种动作，需要一局更长的对局 |
 | `heartbeat` 的实际副作用 | 会置在线状态，为保持只读而跳过 |
 | `/players` 的 POST（搜索） | 未验证参数形态 |
