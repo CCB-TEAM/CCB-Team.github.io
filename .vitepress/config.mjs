@@ -13,8 +13,20 @@ export default defineConfig({
       { text: '项目', link: '/projects/', activeMatch: '^/projects/' },
       { text: '安全 QA', link: '/security/', activeMatch: '^/security/' },
       { text: '自己写私服', link: '/private-server/', activeMatch: '^/private-server/' },
+      { text: '团队', link: '/about/', activeMatch: '^/about/' },
     ],
     sidebar: {
+      '/about/': [
+        {
+          text: '团队',
+          items: [
+            { text: '团队介绍', link: '/about/' },
+            { text: '全部公开项目', link: '/projects/' },
+            { text: '安全 QA', link: '/security/' },
+            { text: '自己写私服', link: '/private-server/' },
+          ],
+        },
+      ],
       '/projects/': [
         {
           text: '项目总览',

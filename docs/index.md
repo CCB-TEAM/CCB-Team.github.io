@@ -54,6 +54,7 @@ features:
 | 测试记录 | [安全 QA](/security/) —— 测试方法、上传与目录穿越、功能缺陷清单、镜像与回放工具 |
 | 自己写私服 | [系列教程](/private-server/) —— 从零实现 Kards 服务端（TS + C# 双语代码）：[协议取证](/private-server/01-discovery) · [会话](/private-server/03-session) · [codec](/private-server/04-codec) · [卡组码](/private-server/06-decks) · [匹配开局](/private-server/07-matchmaking) · [对局动作](/private-server/08-match-actions) · [WebSocket](/private-server/09-websocket) · [部署与兼容性坑](/private-server/10-deploy) |
 | 本站 | [CCB-Team.github.io](/projects/site) —— VitePress 站点源码与部署流程 |
+| 团队 | [团队介绍](/about/) —— 我们是谁、在做什么、成员分工与工作原则 |
 
 ## 组织仓库
 
