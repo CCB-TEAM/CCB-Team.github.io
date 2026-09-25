@@ -104,6 +104,8 @@ nest new mykards      # 或 npm init -y && npm i express ws
 8. [对局动作、调度与结算](/private-server/08-match-actions) —— actions 轮询/提交、mulligan、胜负
 9. [WebSocket 实时通道](/private-server/09-websocket) —— 四个 channel 与帧格式
 10. [部署与兼容性坑](/private-server/10-deploy) —— 反代、IP 重定向、字段顺序陷阱
+11. [物品、装备与卡牌库](/private-server/11-items-library) —— `items` / `library` 的官服实测形态、客户端结构体对照、`deck_id` 为什么不下发
+12. [参考实现没覆盖的端点](/private-server/12-unimplemented) —— 战役 / 抽卡赛 / 锦标赛 / 成就 / 任务的实测形态，以及"操作名即文件名"的客户端结构体索引
 
 ## 附录（产物注解、自检、复现与官服实测）
 

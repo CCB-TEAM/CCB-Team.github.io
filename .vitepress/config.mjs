@@ -112,6 +112,13 @@ export default defineConfig({
           ],
         },
         {
+          text: '数据与覆盖',
+          items: [
+            { text: '11 · 物品、装备与卡牌库', link: '/private-server/11-items-library' },
+            { text: '12 · 参考实现没覆盖的端点', link: '/private-server/12-unimplemented' },
+          ],
+        },
+        {
           text: '附录 · 注解、自检、复现与实测',
           items: [
             { text: 'A · UHT 结构体与枚举', link: '/private-server/appendix/uht-structs' },
