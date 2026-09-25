@@ -132,13 +132,13 @@ Origin: http://<host>
 ```json
 { "message": "pong", "channel": "ping", "context": "",
   "timestamp": "2026-09-25T07:19:04.162435+00:00",
-  "sender": 8826495, "receiver": "" }
+  "sender": <player_id>, "receiver": "" }
 ```
 
 三个细节：
 
 - `timestamp` 是 **RFC3339 带 6 位小数与 `+00:00` 偏移**（Go 的 `time.Time` 序列化风格）——和私服（Unix 毫秒字符串）不一样，客户端两种都收；
-- `sender` 这里是**数字**，而私服那份抓包里是**字符串** `"347676"` —— 客户端两种都收，服务端别做严格校验；
+- `sender` 这里是**数字**，而私服那份抓包里是**字符串**（如 `"<player_id>"`）—— 客户端两种都收，服务端别做严格校验；
 - `pong` 里**没有** `match_id`（客户端发的 ping 里才有）。
 :::
 
