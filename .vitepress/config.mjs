@@ -75,6 +75,8 @@ export default defineConfig({
             { text: '03 · 触发点体系', link: '/kismet-sim/03-triggers' },
             { text: '04 · 审计方法论', link: '/kismet-sim/04-audit' },
             { text: '05 · 坑与复盘', link: '/kismet-sim/05-pitfalls' },
+            { text: '06 · 宿主该切在哪一层（hook 点）', link: '/kismet-sim/06-hooks' },
+            { text: '07 · 发射器与运行时实现特性', link: '/kismet-sim/07-emitter' },
           ],
         },
         {

@@ -34,7 +34,7 @@ features:
     link: /projects/kismetdecompiler
     linkText: 了解 KismetDecompiler
   - title: Kismet 直译模拟器
-    details: KardsSim 把 1671 个蓝图资产直译成 42.5 万行 C#，得到不依赖游戏本体的本地对局模拟器，可复现、可训练 AI。
+    details: KardsSim 把 1671 个蓝图资产直译成 45.6 万行 C#，得到不依赖游戏本体的本地对局模拟器，可复现、可训练 AI。
     link: /kismet-sim/
     linkText: 看设计与心得
   - title: 协议逆向
@@ -54,7 +54,7 @@ features:
 | 项目总览 | [全部公开项目](/projects/) —— 按方向分组的完整清单（含自动同步的仓库状态表） |
 | 游戏服务端 | [fyserver](/projects/fyserver) · [kards-server-go](/projects/kards-server-go) · [FyClient](/projects/fyclient) |
 | UE 工具链 | [Prism](/projects/prism) · [UAssetRegistry](/projects/uassetregistry) · [AssetRegistryTool](/projects/assetregistrytool) · [ULocres](/projects/ulocres) · [KismetDecompiler](/projects/kismetdecompiler) · [KismetReactor](/projects/kismetreactor) |
-| 对局模拟器 | [KardsSim](/projects/kardsim) —— 蓝图 Kismet 直译成 C#：[为什么是 AST](/kismet-sim/01-why-ast) · [调用约定](/kismet-sim/02-calling-convention) · [触发点体系](/kismet-sim/03-triggers) · [审计方法论](/kismet-sim/04-audit) · [坑与复盘](/kismet-sim/05-pitfalls) |
+| 对局模拟器 | [KardsSim](/projects/kardsim) —— 蓝图 Kismet 直译成 C#：[为什么是 AST](/kismet-sim/01-why-ast) · [调用约定](/kismet-sim/02-calling-convention) · [触发点体系](/kismet-sim/03-triggers) · [审计方法论](/kismet-sim/04-audit) · [坑与复盘](/kismet-sim/05-pitfalls) · [推荐 hook 点](/kismet-sim/06-hooks) · [发射器实现特性](/kismet-sim/07-emitter) |
 | 逆向与协议 | [B64XorDecryption](/projects/b64xordecryption) · [上游衍生项目](/projects/upstream) |
 | 测试记录 | [安全 QA](/security/) —— 测试方法、上传与目录穿越、功能缺陷清单、镜像与回放工具 |
 | 自己写私服 | [系列教程](/private-server/) —— 从零实现 Kards 服务端（TS + C# 双语代码）：[协议取证](/private-server/01-discovery) · [会话](/private-server/03-session) · [codec](/private-server/04-codec) · [卡组码](/private-server/06-decks) · [匹配开局](/private-server/07-matchmaking) · [对局动作](/private-server/08-match-actions) · [WebSocket](/private-server/09-websocket) · [部署与兼容性坑](/private-server/10-deploy) |
