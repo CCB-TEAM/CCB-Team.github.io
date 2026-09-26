@@ -29,6 +29,7 @@ CCB-TEAM 是一个小规模的技术小组，做两件事：**把 Kards（1939 G
 | [`Prism`](/projects/prism) | C# | UE4/UE5 .pak 修改工具：浏览、预览、导出、替换纹理，合并 pak，PC 与移动端纹理包互转 |
 | [`KismetDecompiler`](/projects/kismetdecompiler) | C# | 把蓝图字节码还原成可读伪代码，支持批量与 UHT 签名索引 |
 | [`KismetReactor`](/projects/kismetreactor) | C# | 蓝图相关实验工具 |
+| [`KardsSim`](/projects/kardsim) | C# | 把蓝图 Kismet 直译成 C# 的本地对局模拟器（[设计专题](/kismet-sim/)） |
 | [`UAssetRegistry`](/projects/uassetregistry) | C# | 资产注册表读写 |
 | [`AssetRegistryTool`](/projects/assetregistrytool) | C++ | UE5.6 资产注册表修改插件 |
 | [`ULocres`](/projects/ulocres) | C# | 本地化资源（.locres）处理 |

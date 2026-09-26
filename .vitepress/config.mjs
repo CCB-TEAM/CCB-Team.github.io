@@ -13,6 +13,7 @@ export default defineConfig({
       { text: '项目', link: '/projects/', activeMatch: '^/projects/' },
       { text: '安全 QA', link: '/security/', activeMatch: '^/security/' },
       { text: '自己写私服', link: '/private-server/', activeMatch: '^/private-server/' },
+      { text: '模拟器', link: '/kismet-sim/', activeMatch: '^/kismet-sim/' },
       { text: '团队', link: '/about/', activeMatch: '^/about/' },
     ],
     sidebar: {
@@ -49,6 +50,7 @@ export default defineConfig({
             { text: 'ULocres', link: '/projects/ulocres' },
             { text: 'KismetDecompiler', link: '/projects/kismetdecompiler' },
             { text: 'KismetReactor', link: '/projects/kismetreactor' },
+            { text: 'KardsSim（直译模拟器）', link: '/projects/kardsim' },
           ],
         },
         {
@@ -60,6 +62,27 @@ export default defineConfig({
           items: [
             { text: '上游衍生项目（Fork）', link: '/projects/upstream' },
             { text: '本站（CCB-Team.github.io）', link: '/projects/site' },
+          ],
+        },
+      ],
+      '/kismet-sim/': [
+        {
+          text: 'Kismet 直译模拟器',
+          items: [
+            { text: '总览', link: '/kismet-sim/' },
+            { text: '01 · 为什么是 AST，不是伪代码', link: '/kismet-sim/01-why-ast' },
+            { text: '02 · 架构与调用约定', link: '/kismet-sim/02-calling-convention' },
+            { text: '03 · 触发点体系', link: '/kismet-sim/03-triggers' },
+            { text: '04 · 审计方法论', link: '/kismet-sim/04-audit' },
+            { text: '05 · 坑与复盘', link: '/kismet-sim/05-pitfalls' },
+          ],
+        },
+        {
+          text: '相关',
+          items: [
+            { text: 'KardsSim 项目页', link: '/projects/kardsim' },
+            { text: 'KismetDecompiler', link: '/projects/kismetdecompiler' },
+            { text: '项目总览', link: '/projects/' },
           ],
         },
       ],

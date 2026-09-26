@@ -30,6 +30,7 @@ const PAGE = {
   ULocres: '/projects/ulocres',
   KismetDecompiler: '/projects/kismetdecompiler',
   KismetReactor: '/projects/kismetreactor',
+  'kards-sim': '/projects/kardsim',
   B64XorDecryption: '/projects/b64xordecryption',
   'Ruri.ShaderDecompiler': '/projects/upstream#ruri-shaderdecompiler',
   iced: '/projects/upstream#iced',
@@ -52,6 +53,7 @@ const GROUP = {
   ULocres: 'UE 工具链',
   KismetDecompiler: 'UE 工具链',
   KismetReactor: 'UE 工具链',
+  'kards-sim': 'UE 工具链',
   B64XorDecryption: '逆向 / 协议',
   'CCB-Team.github.io': '本站',
 }
@@ -67,6 +69,7 @@ const SUMMARY = {
   ULocres: '.locres 本地化读写库：四种格式版本全覆盖，未修改内容逐字节一致',
   KismetDecompiler: '蓝图 Kismet 字节码反编译器：AST → C++ 风格伪代码，含反 Dispatch 与 CFG 结构化',
   KismetReactor: 'WPF 图形化蓝图字节码查看 / 编辑器：跳转可视化与就地修改',
+  'kards-sim': '把蓝图 Kismet 直译成 C# 的本地对局模拟器：42.5 万行直译产物，可跑自对弈训练 AI',
   B64XorDecryption: 'Base64 + 变长 XOR 私有协议编解码的逆向实现（C 动态库 / C# API）',
   'Ruri.ShaderDecompiler': '通用 Shader 反编译库：把 Shader 二进制还原为带符号的 HLSL',
   iced: 'x86/x64 反汇编 / 汇编 / 编解码库，含 Rust / .NET / Java / Python / Lua 绑定',
