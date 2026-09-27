@@ -15,6 +15,7 @@ export default defineConfig({
       { text: '自己写私服', link: '/private-server/', activeMatch: '^/private-server/' },
       { text: '模拟器', link: '/kismet-sim/', activeMatch: '^/kismet-sim/' },
       { text: 'UE5 逆向', link: '/ue5-re/', activeMatch: '^/ue5-re/' },
+      { text: '蓝图逆向', link: '/ue5-bp/', activeMatch: '^/ue5-bp/' },
       { text: '团队', link: '/about/', activeMatch: '^/about/' },
     ],
     sidebar: {
@@ -189,6 +190,34 @@ export default defineConfig({
           items: [
             { text: 'Kismet 直译模拟器', link: '/kismet-sim/' },
             { text: '项目总览', link: '/projects/' },
+          ],
+        },
+      ],
+      '/ue5-bp/': [
+        {
+          text: 'UE5 蓝图逆向',
+          items: [
+            { text: '总览', link: '/ue5-bp/' },
+            { text: '01 · 蓝图资产里存了什么', link: '/ue5-bp/01-anatomy' },
+            { text: '02 · Kismet 字节码', link: '/ue5-bp/02-bytecode' },
+            { text: '03 · 反编译', link: '/ue5-bp/03-decompile' },
+            { text: '04 · 工具全景', link: '/ue5-bp/04-tooling' },
+            { text: '05 · 罕见之处', link: '/ue5-bp/05-pitfalls' },
+            { text: '06 · 上手路径', link: '/ue5-bp/06-practice' },
+          ],
+        },
+        {
+          text: '附录',
+          items: [
+            { text: '出处清单', link: '/ue5-bp/appendix/sources' },
+          ],
+        },
+        {
+          text: '相关',
+          items: [
+            { text: 'KismetDecompiler', link: '/projects/kismetdecompiler' },
+            { text: 'Kismet 直译模拟器', link: '/kismet-sim/' },
+            { text: 'UE5 运行时逆向', link: '/ue5-re/' },
           ],
         },
       ],
