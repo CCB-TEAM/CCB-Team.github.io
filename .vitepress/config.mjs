@@ -14,6 +14,7 @@ export default defineConfig({
       { text: '安全 QA', link: '/security/', activeMatch: '^/security/' },
       { text: '自己写私服', link: '/private-server/', activeMatch: '^/private-server/' },
       { text: '模拟器', link: '/kismet-sim/', activeMatch: '^/kismet-sim/' },
+      { text: 'UE5 逆向', link: '/ue5-re/', activeMatch: '^/ue5-re/' },
       { text: '团队', link: '/about/', activeMatch: '^/about/' },
     ],
     sidebar: {
@@ -160,6 +161,34 @@ export default defineConfig({
             { text: 'F · 官服实测对照', link: '/private-server/appendix/live-probe' },
             { text: 'G · 端点矩阵与数据复用', link: '/private-server/appendix/endpoint-matrix' },
             { text: 'H · 真实客户端抓包实录', link: '/private-server/appendix/client-capture' },
+          ],
+        },
+      ],
+      '/ue5-re/': [
+        {
+          text: 'UE5 游戏手动逆向',
+          items: [
+            { text: '总览', link: '/ue5-re/' },
+            { text: '01 · 对象模型', link: '/ue5-re/01-object-model' },
+            { text: '02 · 定位 GObjects', link: '/ue5-re/02-gobjects' },
+            { text: '03 · 定位 GNames', link: '/ue5-re/03-gnames' },
+            { text: '04 · 定位 GWorld', link: '/ue5-re/04-gworld' },
+            { text: '05 · ProcessEvent', link: '/ue5-re/05-process-event' },
+            { text: '06 · AOB 特征码', link: '/ue5-re/06-aob' },
+            { text: '07 · 工具链', link: '/ue5-re/07-toolchain' },
+          ],
+        },
+        {
+          text: '附录',
+          items: [
+            { text: '出处清单', link: '/ue5-re/appendix/sources' },
+          ],
+        },
+        {
+          text: '相关',
+          items: [
+            { text: 'Kismet 直译模拟器', link: '/kismet-sim/' },
+            { text: '项目总览', link: '/projects/' },
           ],
         },
       ],

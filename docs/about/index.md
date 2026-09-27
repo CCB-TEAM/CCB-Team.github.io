@@ -45,6 +45,7 @@ CCB-TEAM 是一个小规模的技术小组，做两件事：**把 Kards（1939 G
 | 项目 | 说明 |
 |---|---|
 | [CCB-Team.github.io](/projects/site) | 本站：项目文档、安全 QA 报告、私服教程（VitePress） |
+| [UE5 游戏手动逆向](/ue5-re/) | 公开资料整理：手动定位 GObjects / GNames / GWorld / ProcessEvent 与 AOB 特征码，逐条标注出处（[出处清单](/ue5-re/appendix/sources)） |
 | [安全 QA](/security/) | 针对相关服务端的测试方法、缺陷清单与回放工具 |
 
 ## 成员与分工

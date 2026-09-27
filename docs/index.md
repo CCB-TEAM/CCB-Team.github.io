@@ -41,6 +41,10 @@ features:
     details: B64XorDecryption 还原「Base64 + 变长 XOR 密钥」私有协议，附 C 动态库、C# API 与 IDA 伪代码存档。
     link: /projects/b64xordecryption
     linkText: 了解编解码方案
+  - title: UE5 运行时逆向
+    details: 整理公开资料里手动定位 GObjects / GNames / GWorld / ProcessEvent 与 AOB 特征码的方法，逐条标注出处。
+    link: /ue5-re/
+    linkText: 阅读专题
   - title: 安全 QA 记录
     details: 对 Kards 后台的一轮功能 QA 与安全测试：结论、方法、可复现步骤，以及离线复现的工具链。
     link: /security/
@@ -56,6 +60,7 @@ features:
 | UE 工具链 | [Prism](/projects/prism) · [UAssetRegistry](/projects/uassetregistry) · [AssetRegistryTool](/projects/assetregistrytool) · [ULocres](/projects/ulocres) · [KismetDecompiler](/projects/kismetdecompiler) · [KismetReactor](/projects/kismetreactor) |
 | 对局模拟器 | [KardsSim](/projects/kardsim) —— 蓝图 Kismet 直译成 C#：[为什么是 AST](/kismet-sim/01-why-ast) · [调用约定](/kismet-sim/02-calling-convention) · [触发点体系](/kismet-sim/03-triggers) · [审计方法论](/kismet-sim/04-audit) · [坑与复盘](/kismet-sim/05-pitfalls) · [推荐 hook 点](/kismet-sim/06-hooks) · [发射器实现特性](/kismet-sim/07-emitter) |
 | 逆向与协议 | [B64XorDecryption](/projects/b64xordecryption) · [上游衍生项目](/projects/upstream) |
+| UE5 运行时逆向 | [专题总览](/ue5-re/) —— [对象模型](/ue5-re/01-object-model) · [GObjects](/ue5-re/02-gobjects) · [GNames](/ue5-re/03-gnames) · [GWorld](/ue5-re/04-gworld) · [ProcessEvent](/ue5-re/05-process-event) · [AOB 特征码](/ue5-re/06-aob) · [工具链](/ue5-re/07-toolchain) · [出处清单](/ue5-re/appendix/sources) |
 | 测试记录 | [安全 QA](/security/) —— 测试方法、上传与目录穿越、功能缺陷清单、镜像与回放工具 |
 | 自己写私服 | [系列教程](/private-server/) —— 从零实现 Kards 服务端（TS + C# 双语代码）：[协议取证](/private-server/01-discovery) · [会话](/private-server/03-session) · [codec](/private-server/04-codec) · [卡组码](/private-server/06-decks) · [匹配开局](/private-server/07-matchmaking) · [对局动作](/private-server/08-match-actions) · [WebSocket](/private-server/09-websocket) · [部署与兼容性坑](/private-server/10-deploy) |
 | 本站 | [CCB-Team.github.io](/projects/site) —— VitePress 站点源码与部署流程 |
