@@ -104,6 +104,74 @@ UE4SS 文档承认自己「不是即插即用的方案」，并给了一条手�
 [`GNatives.lua`、`GUObjectHashTables.lua`、`ProcessLocalScriptFunction.lua`、`CallFunctionByNameWithArguments.lua`](https://github.com/UE4SS-RE/RE-UE4SS/tree/main/assets/CustomGameConfigs/Final%20Fantasy%207%20Rebirth/UE4SS_Signatures)。
 **不同游戏坏掉的签名不同**，这也是为什么这套东西必须做成「可覆盖」的。
 
+## UE5 的通用锚点：字符串比字节稳
+
+先说结论：**不存在「一条 AOB 通吃所有 UE5 游戏」这种东西**——理由在
+[第 02 章](/ue5-re/02-gobjects)（布局逐游戏不同）和 [05 章](/ue5-bp/05-pitfalls)（厂商改操作码）。
+
+但有一类锚点**跨版本、跨游戏都相对稳定：引擎自己写死的字符串**。
+它们来自源码里的 `checkf` / `UE_CLOGF` / `LOCTEXT`，Epic 不改文案就不会变，
+而且**唯一性极好**——比字节序列可靠得多。
+
+### 但要分清三类字符串，可用性完全不同
+
+| 类型 | 源码写法 | cooked/Shipping 里还在吗 |
+|---|---|---|
+| **普通字面量** | `UE_CLOGF(cond, LogX, Fatal, "Illegal call to ...")` | ✅ **通常在**（日志要输出） |
+| **本地化文本** | `LOCTEXT("Key", "Attempted to access ...")` | ⚠️ **可能只剩 key**——正文被搬进 `.locres` |
+| **断言文本** | `checkf(cond, TEXT("..."))` | ❌ **可能被编译掉**（`DO_CHECK=0` 时） |
+
+这一条是很多教程没讲清的坑：**你在源码里看到的字符串，不保证在打包后的二进制里能找到。**
+
+### UE 5.8 里实测存在的锚点
+
+下面这些字符串都是我在 UE 5.8 源码里**逐条读到的原文**，并标了它指向哪个函数：
+
+| 字符串（节选） | 类型 | 能定位到 | 接着走 |
+|---|---|---|---|
+| `Illegal call to StaticFindObjectFast() while serializing object data!` | 字面量 ✅ | `StaticFindObjectFastInternal` | → 对象哈希表 / `GObjects`（[路径 2](/ue5-re/08-anchor-paths)） |
+| `Illegal call to StaticFindObjectFast() while garbage collecting!` | 字面量 ✅ | 同上 | 同上 |
+| `StaticConstructObject %s is not an instance of class %s and it is not a CDO.` | 断言 ⚠️ | `StaticConstructObject_Internal` | → **`GUObjectArray`**（[路径 1](/ue5-re/08-anchor-paths)） |
+| `Cannot call UnrealScript (%s - %s) while PostLoading objects` | 断言 ⚠️ | `UObject::ProcessEvent` | → `Invoke` → VM（[路径 4](/ue5-re/08-anchor-paths)） |
+| `Function '%s' called on Object '%s' that was marked unreachable...` | 断言 ⚠️ | `UObject::ProcessEvent` | 同上 |
+| `Attempted to access missing local variable. ...editor-only property?` | LOCTEXT ⚠️ | `execLocalVariable` | → `GNatives`（[示例 2](/ue5-re/09-minhook)） |
+| `Infinite script recursion ({0} calls) detected - see log for stack trace` | LOCTEXT ⚠️ | `ProcessLocalScriptFunction` | → VM 主循环 |
+| `Runaway loop detected (over {0} iterations) - see log for stack trace` | LOCTEXT ⚠️ | VM 主循环 | → `GNatives` |
+| `Computation timed out - see log for stack trace` | LOCTEXT ⚠️ | VM 主循环 | 同上 |
+
+::: tip 还有一个「白送」的锚点
+UE5 的 VM 里有一张操作码名字表（[13 章](/ue5-bp/13-vm)）：
+
+```cpp
+#define STORE_INSTRUCTION_NAMES SCRIPT_AUDIT_ROUTINES
+#if STORE_INSTRUCTION_NAMES
+const char* GNativeFuncNames[EX_Max];
+#define STORE_INSTRUCTION_NAME(inst) ...
+```
+
+**如果目标构建开了 `SCRIPT_AUDIT_ROUTINES`，二进制里会有 `"EX_Jump"`、`"EX_ComputedJump"` 这类字符串**——
+搜到它们，`GNatives` 就在附近。Shipping 里通常是关的，但值得先搜一下试试。
+:::
+
+### 从字符串到地址的标准流程
+
+```
+1. 在 IDA / Ghidra 里搜字符串（不要用十六进制搜，用字符串）
+2. 看它的交叉引用 → 找到引用它的函数
+3. 在那个函数里找 lea reg, [rip+disp] 这类全局引用
+4. 解出 RIP 相对地址 → 拿到全局量
+5. 用第 08 章的路径表往下走
+```
+
+**第 1 步的顺序很重要**：先搜字符串（好找、唯一），再顺着引用走（机械），
+最后才需要理解反汇编（难）。反过来做就是在给自己找麻烦。
+
+::: warning 字符串也可能被本地化
+如果目标游戏把 `LOCTEXT` 的正文搬进了 `.locres`（见本站
+[ULocres 项目](/projects/ulocres)），那么二进制里只剩命名空间和 key。
+这种情况下改搜**普通字面量**那一类，或者退回去用结构特征码。
+:::
+
 ## 两个回调：`Register` 与 `OnMatchFound`
 
 UE4SS 的签名文件是一段 Lua，约定两个全局函数：

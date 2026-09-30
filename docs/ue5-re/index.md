@@ -38,6 +38,8 @@ title: UE5 游戏手动逆向 · 总览
 | [05 · ProcessEvent](/ue5-re/05-process-event) | `UFunction` 结构、vtable 槽位、Hook 方式、反射调用 |
 | [06 · AOB 特征码](/ue5-re/06-aob) | 特征码怎么写、RIP 相对地址怎么解、真实签名实例与多版本维护 |
 | [07 · 工具链](/ue5-re/07-toolchain) | UE4SS / Dumper-7 / CUE4Parse / IDA / Ghidra / x64dbg 等，以及学习路径 |
+| [08 · 定位路径速查](/ue5-re/08-anchor-paths) | **九条从入口到目标的路径**：`StaticConstructObject` → `GUObjectArray`、`FName::ToString` → 名称池、`PersistentLevel` → 演员……附 UE 5.8 源码证据与优先级建议 |
+| [09 · MinHook 上手](/ue5-re/09-minhook) | 三种 hook 位置对比、MinHook API、VMT hook `ProcessEvent`、替换 `GNatives` 表项、可编译骨架与崩溃排查清单 |
 | [附录 · 出处清单](/ue5-re/appendix/sources) | 全部来源、编号与它们各自支撑的结论 |
 
 ## 术语表

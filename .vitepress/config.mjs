@@ -177,6 +177,8 @@ export default defineConfig({
             { text: '05 · ProcessEvent', link: '/ue5-re/05-process-event' },
             { text: '06 · AOB 特征码', link: '/ue5-re/06-aob' },
             { text: '07 · 工具链', link: '/ue5-re/07-toolchain' },
+            { text: '08 · 定位路径速查', link: '/ue5-re/08-anchor-paths' },
+            { text: '09 · MinHook 上手', link: '/ue5-re/09-minhook' },
           ],
         },
         {

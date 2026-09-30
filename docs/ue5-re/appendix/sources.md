@@ -30,6 +30,8 @@ title: 附录 · 出处清单
 | A8 | [`LocalPlayer.h` / `PlayerController.h`（同上）](https://github.com/EpicGames/UnrealTournament/tree/master/Engine/Source/Runtime/Engine/Classes) | `ULocalPlayer` → `PlayerController` → `Pawn` 这一段的字段依据 |
 | A9 | Epic 官方引擎仓库中的 [`Object.h`](https://github.com/search?q=repo%3AEpicGames%2FUnrealEngine+ProcessEvent+filename%3AObject.h&type=code) / [`UnrealEngine.h`](https://github.com/search?q=repo%3AEpicGames%2FUnrealEngine+GWorld+path%3AEngine%2FSource%2FRuntime%2FEngine%2FPublic&type=code) / [`NameTypes.h`](https://github.com/search?q=repo%3AEpicGames%2FUnrealEngine+FNamePool+filename%3ANameTypes.h&type=code) / [`UObjectArray.h`](https://github.com/search?q=repo%3AEpicGames%2FUnrealEngine+FUObjectItem+filename%3AUObjectArray.h&type=code) | 在 UE5 侧的符号落点：`ProcessEvent`、`GWorld`、`FNamePool`、`FUObjectItem`（该仓库需关联 Epic 账号才能浏览，故这里给出的是代码搜索链接） |
 
+| A10 | **`CCB-Team/UnrealEngine`（私有仓库，Epic 官方 UE5 源码镜像，`release` 分支，`ENGINE 5.8.0`）**：`CoreUObject/Private/UObject/UObjectGlobals.cpp`、`CoreUObject/Public/UObject/UObjectArray.h`、`Core/Public/UObject/NameTypes.h`、`Core/Private/UObject/NameTypes.cpp`、`Engine/Classes/Engine/World.h`、`Engine/Classes/Engine/Level.h`、`Engine/Classes/Engine/GameInstance.h`、`Engine/Classes/GameFramework/PlayerController.h` | [08 章](/ue5-re/08-anchor-paths)的全部证据：`extern COREUOBJECT_API FUObjectArray GUObjectArray;` 的声明、`StaticConstructObject_Internal` 对 `GUObjectArray.ObjectToIndex(...)` 的调用、`StaticFindObjectFastInternal`、名称池全局量 `NamePoolData` 与位布局常量（`OffsetBits = 16` / `BlockBits = 13` / `EntryStride = alignof(FNameEntry)`）、`UWorld::PersistentLevel`、`ULevel::Actors` 位于 `WITH_EDITORONLY_DATA` 的事实、`UGameInstance::LocalPlayers` 与 `APlayerController::AcknowledgedPawn` |
+
 ::: warning 关于 A 级的版本差异
 `EpicGames/UnrealTournament` 是**公开可读的 UE4 源码镜像**，对应较早的 UE4 版本，因此字段名可能与新版不同
 （例如 `FName` 的索引字段在新版是 `FNameEntryId` 类型）。用它来理解**结构与关系**是可靠的，但**不要**把其中的具体
@@ -66,7 +68,7 @@ title: 附录 · 出处清单
 |---|---|---|
 | C1 | [x64dbg 文档](https://help.x64dbg.com/en/latest/) | 读内存、断点、表达式与命令体系（UE4SS 流程中的第 2、5 步） |
 | C2 | [Ghidra](https://github.com/NationalSecurityAgency/ghidra) | 静态逆向框架 |
-| C3 | [MinHook](https://github.com/TsudaKageyu/minhook) | Windows x86/x64 inline hook 库 |
+| C3 | [MinHook](https://github.com/TsudaKageyu/minhook)（`include/MinHook.h` 与 README） | Windows x86/x64 inline hook 库；[09 章](/ue5-re/09-minhook)引用的 API 签名（`MH_CreateHook` / `MH_EnableHook` / `MH_QueueEnableHook` / `MH_ApplyQueued`）、`MH_ALL_HOOKS` 的定义，以及「每次 Enable/Disable 都会挂起并恢复所有线程」这条官方说明 |
 | C4 | [frida](https://github.com/frida/frida) | 动态插桩框架 |
 
 ## 数据来源
