@@ -216,6 +216,13 @@ export default defineConfig({
           ],
         },
         {
+          text: '字节码详解',
+          items: [
+            { text: '11 · 常用字节码（上）', link: '/ue5-bp/11-opcodes-a' },
+            { text: '12 · 常用字节码（下）', link: '/ue5-bp/12-opcodes-b' },
+          ],
+        },
+        {
           text: '附录',
           items: [
             { text: '出处清单', link: '/ue5-bp/appendix/sources' },
