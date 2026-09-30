@@ -63,10 +63,16 @@ else
 UE4 的 `UProperty` **是 `UObject`**，所以能进包的导入表，用 `FPackageIndex` 就能引用；
 UE5 的 `FField`/`FProperty` **不再是 `UObject`**，进不了导入表，于是只能换成「名字路径」这种自描述的形式。
 
-依据有两条：`UProperty : public UField` 且 `UField : public UObject`（[`UnrealType.h`](https://github.com/EpicGames/UnrealTournament/blob/master/Engine/Source/Runtime/CoreUObject/Public/UObject/UnrealType.h)），
-以及 `FField` 在两个库里都是**独立于 `UObject` 的普通类**（[UAssetAPI](https://github.com/atenfyr/UAssetAPI/blob/master/UAssetAPI/FieldTypes/FField.cs) /
-[CUE4Parse](https://github.com/FabianFG/CUE4Parse/blob/master/CUE4Parse/UE4/Objects/UObject/FField.cs)）。
-「所以必须换形态」是本专题的推论，不是源码里的原话。
+依据有三条：
+
+1. UE4 的 `UProperty : public UField` 且 `UField : public UObject`（[UE4 公开镜像 `UnrealType.h`](https://github.com/EpicGames/UnrealTournament/blob/master/Engine/Source/Runtime/CoreUObject/Public/UObject/UnrealType.h)）；
+2. `FField` 在两个库里都是**独立于 `UObject` 的普通类**（[UAssetAPI](https://github.com/atenfyr/UAssetAPI/blob/master/UAssetAPI/FieldTypes/FField.cs) /
+   [CUE4Parse](https://github.com/FabianFG/CUE4Parse/blob/master/CUE4Parse/UE4/Objects/UObject/FField.cs)）；
+3. **UE 5.8 源码里 `FFieldVariant` 的类注释直接说了这次迁移的目的**：
+   *「Exposes common interface of FFields and UObjects for easier transition from UProperties to FProperties.」*
+   （`CoreUObject/Public/UObject/Field.h`，见 [08 章](/ue5-bp/08-property-system)）
+
+「所以必须换形态」是本专题的推论，但第 3 条基本坐实了因果。
 :::
 
 ## FFieldPath 里有什么

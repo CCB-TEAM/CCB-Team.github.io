@@ -25,10 +25,14 @@ title: 01 · 蓝图资产里存了什么
 
 （出自本站 [KismetDecompiler README](https://github.com/CCB-TEAM/KismetDecompiler)）
 
-引擎侧对应的成员是 `UStruct` 上的 script 字节数组（在
-[`Class.cpp`](https://github.com/EpicGames/UnrealTournament/blob/master/Engine/Source/Runtime/CoreUObject/Private/UObject/Class.cpp)
-里可见 `ScriptBytecode` 相关序列化逻辑）。**先记住这个层级**：字节码属于
-`UStruct`（`UFunction` 是它的子类），不是属于 `UClass` 本身。
+引擎侧对应的成员是 `UStruct::Script`——UE 5.8 `CoreUObject/Public/UObject/Class.h` 里的定义与注释原文是：
+
+```cpp
+/** Script bytecode associated with this object */
+TArray<uint8> Script = {};
+```
+
+**先记住这个层级**：字节码属于 `UStruct`（`UFunction` 是它的子类），不是属于 `UClass` 本身。
 
 ## 一个蓝图资产牵扯三样东西
 

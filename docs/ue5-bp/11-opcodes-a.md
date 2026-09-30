@@ -16,7 +16,7 @@ token 值、操作数、语义、以及反编译器会把它渲染成什么。
 | **token** | `EExprToken` 的取值（十六进制） |
 | **操作数** | 序列化时的字段，**按写入顺序排列**——顺序就是解析顺序 |
 | **渲染** | 本站 [KismetDecompiler](https://github.com/CCB-TEAM/KismetDecompiler) 的 `ExprRenderer` 实际输出（取自源码） |
-| **注释原文** | Epic 公开源码 `Script.h` 里的原话（有则引用，无则说明） |
+| **注释原文** | UE 5.8 源码 `Script.h` 里的原话（有则引用，无则说明） |
 
 ::: tip 关于「无操作数」
 有些操作码没有任何字段（如 `EX_True`、`EX_EndFunctionParms`）——**它们自己就是全部信息**。
@@ -64,11 +64,10 @@ public abstract class EX_VariableBase : KismetExpression
 - 渲染：`self`
 - 注释原文：*Self object.*
 
-::: warning 还有一个 `EX_ClassSparseDataVariable`
-`EX_VariableBase` 基类里把默认 token 写成了 `EX_ClassSparseDataVariable`——
-这个操作码**不在 UE4 公开源码的操作码表里**，是后来新增的。
-它同样继承「一个 `KismetPropertyPointer`」的形态。
-:::
+### `EX_ClassSparseDataVariable` · `0x6C` — 稀疏数据变量 ★
+- 操作数：`KismetPropertyPointer Variable`（继承 `EX_VariableBase`）
+- 注释原文：*Sparse data variable*
+- 备注：**UE4 表里没有这个取值**。`EX_VariableBase` 基类把默认 token 写成了它，说明它是变量引用族的一员。
 
 ---
 
@@ -100,9 +99,12 @@ public abstract class EX_VariableBase : KismetExpression
 | 操作码 | token | 操作数 | 注释原文 |
 |---|---|---|---|
 | `EX_FloatConst` | `0x1E` | `float Value` | *Floating point constant.* |
+| `EX_DoubleConst` | `0x37` | `double`（泛型 `Value`） | *Double constant.* ★ |
 | `EX_StringConst` | `0x1F` | `string`（泛型 `Value`） | *String constant.* |
 | `EX_UnicodeStringConst` | `0x34` | `string`（泛型 `Value`） | *Unicode string constant.* |
 | `EX_NameConst` | `0x21` | `FName`（泛型 `Value`） | *A name constant.* |
+
+★ = UE4 表里没有这个取值。
 
 ::: warning 字符串有两种
 `EX_StringConst` 是 ANSI 字符串，`EX_UnicodeStringConst` 是宽字符。
@@ -118,10 +120,15 @@ public abstract class EX_VariableBase : KismetExpression
 | `EX_VectorConst` | `0x23` | `FVector Value` | `(x, y, z)` | *A vector constant.* |
 | `EX_RotationConst` | `0x22` | `FRotator Value` | — | *A rotation constant.* |
 | `EX_TransformConst` | `0x2B` | `FTransform`（泛型 `Value`） | — | *A transform constant* |
-| `EX_Vector3fConst` | — | `float X`、`float Y`、`float Z` | `(x, y, z)` | 无（新增操作码） |
+| `EX_Vector3fConst` | `0x41` | `float X`、`float Y`、`float Z` | `(x, y, z)` | *A float vector constant.* ★ |
 | `EX_NoObject` | `0x2A` | 无操作数 | `null` | *NoObject.* |
 | `EX_NoInterface` | `0x2D` | 无操作数 | `null` | *A null interface (similar to `EX_NoObject`, but for interfaces)* |
-| `EX_AssetConst` | `0x67` | — | — | 无（UE4 公开源码中无注释） |
+| `EX_SoftObjectConst` | `0x67` | — | — | 无 |
+
+::: warning `0x67` 换过含义
+UE4 里 `0x67` 是 `EX_AssetConst`，**UE 5.8 里是 `EX_SoftObjectConst`**。
+按 UE4 的表去读 UE5 资产，这一格会解释错。
+:::
 
 `EX_TextConst` 的渲染要看 `EBlueprintTextLiteralType`——本站反编译器按它还原成
 字符串字面量、`NSLOCTEXT(...)` 或 `LOCTABLE(...)` 三种形式之一。
@@ -153,7 +160,8 @@ public abstract class EX_VariableBase : KismetExpression
 |---|---|---|---|---|
 | `EX_FinalFunction` | `0x1C` | `FPackageIndex StackNode`、`KismetExpression[] Parameters` | `name(params)` | *A prebound function call with parameters.* |
 | `EX_VirtualFunction` | `0x1B` | `FName VirtualFunctionName`、`KismetExpression[] Parameters` | `name(params)` | *A function call with parameters.* |
-| `EX_LocalVirtualFunction` | — | 同虚函数 | `name(params)` | 无 |
+| `EX_LocalVirtualFunction` | `0x45` | `FName` + `Parameters` | `name(params)` | *Special instructions to quickly call a virtual function that we know is going to run only locally* ★ |
+| `EX_LocalFinalFunction` | `0x46` | `FPackageIndex StackNode` + `Parameters` | `name(params)` | *Special instructions to quickly call a final function that we know is going to run only locally* ★ |
 | `EX_CallMath` | `0x68` | 继承 `EX_FinalFunction`（`StackNode` + `Parameters`） | 能识别成运算符就渲染成 `a + b`，否则退化成调用 | *static pure function from on local call space* |
 
 **`EX_FinalFunction` 与 `EX_VirtualFunction` 的区别**：前者用 `FPackageIndex` 直接绑定目标函数
@@ -224,7 +232,7 @@ public KismetExpression AssignmentExpression;
 
 ### `EX_LetValueOnPersistentFrame` · `0x64` — 写进持久帧
 - 操作数：`KismetPropertyPointer DestinationProperty`、`KismetExpression AssignmentExpression`
-- 注释原文：无（UE4 公开源码中该值无注释）
+- 注释原文：无（UE 5.8 源码中该取值无注释）
 
 **「持久帧」指的是跨帧保留的那块存储**（延迟节点的状态就存在这里）。
 它和普通 `EX_Let` 的区别是目标不是对象属性，而是持久帧上的一个位置。

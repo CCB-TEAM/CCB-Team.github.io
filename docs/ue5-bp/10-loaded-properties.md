@@ -54,7 +54,8 @@ private:
 };
 ```
 
-（出自 [UE4 公开源码 `Class.h`](https://github.com/EpicGames/UnrealTournament/blob/master/Engine/Source/Runtime/CoreUObject/Public/UObject/Class.h)）
+（出自 **UE 5.8 源码** `CoreUObject/Public/UObject/Class.h`；`// Persistent variables.` 与
+`// Variables in memory only.` 的分组注释在 UE4 与 UE 5.8 中一致）
 
 **`ParmsSize`、`ReturnValueOffset`、`NumParms` 三个字段的注释是「Variables in memory only」**——
 它们**不在资产文件里**，是引擎加载时算出来的。

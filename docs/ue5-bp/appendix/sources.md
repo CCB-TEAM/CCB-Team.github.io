@@ -21,19 +21,26 @@ title: 附录 · 出处清单
 
 | # | 来源 | 支撑内容 |
 |---|---|---|
-| A1 | [`Script.h`](https://github.com/EpicGames/UnrealTournament/blob/master/Engine/Source/Runtime/CoreUObject/Public/UObject/Script.h)（EpicGames/UnrealTournament 公开镜像） | **`EExprToken` 完整操作码表**（0x00–0x6B、`EX_Max = 0x100`），含全部注释原文；执行流栈四件套 `EX_PushExecutionFlow` / `EX_PopExecutionFlow` / `EX_ComputedJump` / `EX_PopExecutionFlowIfNot` 的语义 |
-| A2 | [`ScriptDisassembler.h`](https://github.com/EpicGames/UnrealTournament/blob/master/Engine/Source/Editor/UnrealEd/Public/ScriptDisassembler.h) | 引擎自带 `FKismetBytecodeDisassembler` 的定位（「create a human readable version」）与它属于 **UnrealEd** 模块（仅编辑器构建） |
-| A3 | [`Class.cpp`](https://github.com/EpicGames/UnrealTournament/blob/master/Engine/Source/Runtime/CoreUObject/Private/UObject/Class.cpp) | 字节码在引擎侧挂在 `UStruct` 上（`ScriptBytecode` 序列化逻辑所在文件） |
+| A1 | **UE 5.8 源码** `CoreUObject/Public/UObject/Script.h`（CCB-TEAM 私有镜像） | **`EExprToken` 完整操作码表**（0x00–0x6D 与 0x70–0x73、`EX_Max = 0xFF`），含全部注释原文；执行流栈四件套 `EX_PushExecutionFlow` / `EX_PopExecutionFlow` / `EX_ComputedJump` / `EX_PopExecutionFlowIfNot` 的语义；UE4 公开镜像的对照见 [A9](#a-引擎源码) |
+| A2 | UE4 公开镜像 `Editor/UnrealEd/Public/ScriptDisassembler.h` | 引擎自带 `FKismetBytecodeDisassembler` 的定位（「create a human readable version」）与它属于 **UnrealEd** 模块（仅编辑器构建）。⚠️ **在 UE 5.8 的源码树里这个路径已不存在**（多个候选路径均 404，可能被移动或移除），需要时请在自己有权限的副本里检索 `FKismetBytecodeDisassembler` |
+| A3 | **UE 5.8 源码** `CoreUObject/Private/UObject/ScriptCore.cpp`（4256 行）与 `Public/UObject/Stack.h` | 字节码在引擎侧挂在 `UStruct::Script` 上（`FFrame` 构造函数里 `Code(InNode->Script.GetData())`）；[第 13 章](/ue5-bp/13-vm)的全部运行时依据 |
 | A4 | [Epic 官方引擎仓库（需关联 Epic 账号）](https://github.com/EpicGames/UnrealEngine) | UE5 侧同名头文件（`Script.h` / `Class.h` / `Object.h`）的对照位置 |
-| A5 | [`Class.h`](https://github.com/EpicGames/UnrealTournament/blob/master/Engine/Source/Runtime/CoreUObject/Public/UObject/Class.h) | `UStruct` 的 `SuperStruct` / `Children` / `PropertiesSize` / `MinAlignment` / `Script`（字节码本体）与 `LinkChild` 的头插链表；`UClass : public UStruct` 及其类级 typedef；`UFunction` 的**持久字段 vs 内存字段**分组（`ParmsSize` / `ReturnValueOffset` / `NumParms` 属于后者） |
-| A6 | [`ObjectResource.h`](https://github.com/EpicGames/UnrealTournament/blob/master/Engine/Source/Runtime/CoreUObject/Public/UObject/ObjectResource.h) | `FPackageIndex` 的定义原文：正值指向 ExportMap（下标 = 值−1），负值指向 ImportMap（下标 = −值−1） |
-| A7 | [`UnrealType.h`](https://github.com/EpicGames/UnrealTournament/blob/master/Engine/Source/Runtime/CoreUObject/Public/UObject/UnrealType.h) | `UProperty` 的字段分组：`ArrayDim` / `ElementSize` / `PropertyFlags` / `RepIndex` / `RepNotifyFunc` 为持久，`Offset_Internal` 与四个链表指针注明「In memory only / generated during Link()」 |
-| A8 | **`CCB-Team/UnrealEngine`（私有仓库，Epic 官方 UE5 源码镜像，`release` 分支，`ENGINE 5.8.0`）**：`CoreUObject/Private/UObject/ScriptCore.cpp`（4256 行）、`CoreUObject/Public/UObject/Stack.h`、`CoreUObject/Public/UObject/ScriptMacros.h`、`CoreUObject/Public/UObject/Script.h`、`CoreUObject/Private/UObject/Class.cpp`、`Runtime/Launch/Resources/Version.h` | [第 13 章](/ue5-bp/13-vm)的全部依据：`GNatives` 分派表与 `IMPLEMENT_VM_FUNCTION` 注册宏、**92 条 opcode→处理函数映射**、`FFrame` 字段与操作数读取、`ProcessEvent` / `ProcessInternal` / `ProcessLocalScriptFunction` / `CallFunction`、`execJump` 等处理函数、`P_GET_*` 宏、`UFunction::Bind` 里的 `Func = &UObject::ProcessInternal`；以及 UE 5.8 的操作码取值（`EX_Max = 0xFF`、`0x67` 变为 `EX_SoftObjectConst` 等） |
+| A5 | **UE 5.8 源码** `CoreUObject/Public/UObject/Class.h` | `UStruct` 的 `ChildProperties`（`FField*`）/ `Children`（`UField*`）/ `PropertiesSize` / `MinAlignment` / `Script` 与四条内存链表（`PropertyLink` / `RefLink` / `DestructorLink` / `PostConstructLink`）；`UClass : public UStruct`（`Within=Package`）；`UFunction` 的**持久字段 vs 内存字段**分组（`NumParms` / `ParmsSize` / `ReturnValueOffset` 属于后者，`FunctionFlags` 属于前者） |
+| A6 | **UE 5.8 源码** `CoreUObject/Public/UObject/ObjectResource.h` | `FPackageIndex` 的定义原文：正值指向 ExportMap（下标 = 值−1），负值指向 ImportMap（下标 = −值−1）（与 UE4 注释一致） |
+| A7 | **UE 5.8 源码** `CoreUObject/Public/UObject/UnrealType.h` 与 `Public/UObject/Field.h` | `FProperty` 的字段分组（`ArrayDim` / `ElementSize`（**5.5 起废弃**）/ `PropertyFlags` / `RepIndex` 为持久；`IndexInOwner` 与 `Offset_Internal` 注明 *Generated during Link()*）；`FFieldClass` 的完整字段与其类注释 *Mimics a subset of UObject reflection functions*；`FFieldVariant` 的迁移说明 |
+| A8 | **`CCB-Team/UnrealEngine`（私有仓库，Epic 官方 UE5 源码镜像，`release` 分支，`ENGINE 5.8.0`）**：`CoreUObject/Public/UObject/Script.h`、`Class.h`、`Field.h`、`UnrealType.h`、`ObjectMacros.h`、`ObjectResource.h`、`Stack.h`、`ScriptMacros.h`、`CoreUObject/Private/UObject/ScriptCore.cpp`（4256 行）、`Runtime/Launch/Resources/Version.h` | **本系列引擎侧结论的总依据**：[13 章](/ue5-bp/13-vm)全部（`GNatives` 分派表与 `IMPLEMENT_VM_FUNCTION` 注册宏、**92 条 opcode→处理函数映射**、`FFrame` 字段与操作数读取、`ProcessEvent` / `ProcessInternal` / `ProcessLocalScriptFunction` / `CallFunction`、`execJump` 等处理函数、`P_GET_*` 宏、`UFunction::Bind` 里的 `Func = &UObject::ProcessInternal`）；[02 章](/ue5-bp/02-bytecode)的操作码全表；[07 章](/ue5-bp/07-structures)的字段分组；[08 章](/ue5-bp/08-property-system)的 `FFieldClass` / `FFieldVariant` / `FProperty` / `EPropertyFlags` |
 
-::: warning 版本提醒
-`EpicGames/UnrealTournament` 是**公开可读的 UE4 源码镜像**，对应较早的 UE4 版本。
-用它理解**操作码语义与结构**是可靠的，但**不要**把其中的具体取值当成「UE5 的完整表」——
-见 [B1](#b-开源项目源码文档) 里 UAssetAPI 的 UE5 侧枚举差异。
+::: warning 版本政策：以 UE 5.8 为准
+**本系列涉及引擎行为的地方，一手来源都是 UE 5.8**（见 A8）。A1 / A3 / A5 / A6 / A7 指向的就是
+UE 5.8 源码里的文件路径。
+
+`EpicGames/UnrealTournament` 是**公开可读的 UE4 源码镜像**，本专题只在两种情况下引用它：
+
+1. **做 UE4 → UE5 的对照**（[02 章](/ue5-bp/02-bytecode) / [05 章](/ue5-bp/05-pitfalls) /
+   [13 章](/ue5-bp/13-vm) 的差异表）；
+2. **某个结论本身是 UE4 的事**（例如 A2 的 `FKismetBytecodeDisassembler`——UE 5.8 里已找不到该路径）。
+
+**不要**拿 UE4 的具体取值当成「UE5 的表」：操作码表、属性体系、字段布局都改过。
 :::
 
 ## B · 开源项目源码与文档

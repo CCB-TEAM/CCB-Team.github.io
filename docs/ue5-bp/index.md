@@ -9,13 +9,20 @@ title: UE5 蓝图逆向 · 总览
 
 ## 为什么这块内容罕见
 
+::: tip 本系列的基准是 UE 5.8
+涉及引擎行为的地方，全部以 **UE 5.8 源码**为准（取自 CCB-TEAM 私有镜像的 Epic 官方仓库，
+`release` 分支，`ENGINE 5.8.0`）。UE4 只在与 UE5 对照时出现——
+因为**两者在操作码表、属性体系、字段布局上都有实质差异**，拿 UE4 的资料读 UE5 会出错。
+:::
+
 三个原因，每个都有实证：
 
 1. **没有公开的字节码规范。** 官方唯一给出的「可读化」手段是引擎自带的
    `FKismetBytecodeDisassembler`，而它自己在头文件里写的定位是
    「Kismet bytecode disassembler; Can be used to create a human readable version of Kismet bytecode
    for a specified structure or class」——**是给人看的反汇编视图，不是格式规范**
-   （[`ScriptDisassembler.h`](https://github.com/EpicGames/UnrealTournament/blob/master/Engine/Source/Editor/UnrealEd/Public/ScriptDisassembler.h)）。
+   （UE4 里的位置是 [`Editor/UnrealEd/Public/ScriptDisassembler.h`](https://github.com/EpicGames/UnrealTournament/blob/master/Engine/Source/Editor/UnrealEd/Public/ScriptDisassembler.h)；
+   ⚠️ 在 UE 5.8 的源码树里这个路径已不存在，可能被移动或移除）。
 2. **工具生态碎片化。** 每个工具覆盖的范围都有限：有的只反编译不编译，有的只画 CFG，
    有的明确写着「主要用 UE 4.23 的资产测过」。
 3. **游戏厂商会往操作码表的空档里塞自己的指令。** 这是最要命的一条——见

@@ -9,8 +9,9 @@ title: 05 · 罕见之处
 
 ## 一、厂商会往操作码空档里塞自己的指令
 
-`EExprToken` 枚举结束于 `EX_Max = 0x100`，但公开源码里最后一个是 `EX_ArrayGetByRef = 0x6B`。
-**0x6C 到 0xFF 之间是一大片没人用的空档**——而游戏厂商就往这里塞东西。
+在 UE 5.8 里，引擎自用的取值一直到 `EX_FieldPathConst = 0x6D`，`0x70`–`0x73` 被 AutoRTFM 占用，
+枚举上界是 `EX_Max = 0xFF`。**厂商能塞自定义指令的空间是 `0x6E`–`0x6F` 与 `0x74`–`0xFE`**——
+而游戏厂商就往这里塞东西。（UE4 时代的表不一样，见 [02 章 · UE4→UE5 差异](/ue5-bp/02-bytecode)）
 
 CUE4Parse 为每个这样的游戏单独写了表达式类。看两个真实例子：
 
@@ -59,15 +60,26 @@ CUE4Parse 为此维护了 `GameTypes/{2XKO, Borderlands4, DFHO, WuWa}/Kismet/` �
 
 ## 二、操作码表本身也在增长
 
-对比两边的枚举能看出增量：
+对比 UE4 与 UE 5.8 的枚举，能看出增量有多大：
 
-| 取值 | UE4 公开源码 `Script.h` | UAssetAPI 的 UE5 侧枚举 |
+| 取值 | UE4 公开镜像 | UE 5.8 |
 |---|---|---|
-| `EX_NothingInt32` 0x0C | ✗ 没有 | ✓ 有 |
-| `EX_BitFieldConst` 0x11 | ✗ 没有 | ✓ 有 |
+| `EX_NothingInt32` 0x0C | ✗ | ✓ |
+| `EX_BitFieldConst` 0x11 | ✗ | ✓ |
+| `EX_PropertyConst` 0x33 | ✗ | ✓ |
+| `EX_DoubleConst` 0x37 | ✗ | ✓ |
+| `EX_Cast` 0x38 | `EX_PrimitiveCast` | 改名 |
+| `EX_SetSet` / `EX_SetMap` / `EX_SetConst` / `EX_MapConst` 0x39–0x40 | ✗ | ✓（八连） |
+| `EX_Vector3fConst` 0x41 | ✗ | ✓ |
+| `EX_LocalVirtualFunction` / `EX_LocalFinalFunction` 0x45 / 0x46 | ✗ | ✓ |
+| `EX_SoftObjectConst` 0x67 | `EX_AssetConst` | 含义被替换 |
+| `EX_ClassSparseDataVariable` / `EX_FieldPathConst` 0x6C / 0x6D | ✗ | ✓ |
+| `EX_AutoRtfm*` 0x70–0x73 | ✗ | ✓（四个） |
+| `EX_Max` | `0x100` | `0xFF` |
 
-（左列：[`Script.h`](https://github.com/EpicGames/UnrealTournament/blob/master/Engine/Source/Runtime/CoreUObject/Public/UObject/Script.h)；
-右列：[`UAssetAPI/Kismet/Bytecode/EExprToken.cs`](https://github.com/atenfyr/UAssetAPI/blob/master/UAssetAPI/Kismet/Bytecode/EExprToken.cs)）
+（UE 5.8 列出自 **CCB-TEAM 私有镜像的 UE 5.8 源码** `CoreUObject/Public/UObject/Script.h`；
+UE4 列出自 [公开镜像](https://github.com/EpicGames/UnrealTournament/blob/master/Engine/Source/Runtime/CoreUObject/Public/UObject/Script.h)。
+完整对照见 [02 章](/ue5-bp/02-bytecode)）
 
 **解析器必须有「未知 token」的处理策略**：报错、跳过（如果长度可算）、还是猜。
 三者都会出错，区别只是错得明不明显。

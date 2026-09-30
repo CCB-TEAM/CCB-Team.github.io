@@ -7,22 +7,170 @@ title: 08 · 属性系统：FField 与 FProperty
 字节码里到处是「某个属性」的引用。搞不清属性系统，`EX_PropertyConst`、`EX_StructMemberContext`、
 `EX_InstanceVariable` 这些操作码就只能靠猜。
 
-## 先给定义
+::: tip 本章以 UE 5.8 为准
+定义与字段全部取自 **CCB-TEAM 私有镜像的 Epic 官方 UE5 源码**（`release` 分支，`ENGINE 5.8.0`）：
+
+| 文件 | 提供什么 |
+|---|---|
+| `CoreUObject/Public/UObject/Field.h` | `FFieldClass`、`FFieldVariant` |
+| `CoreUObject/Public/UObject/UnrealType.h` | `FProperty` |
+| `CoreUObject/Public/UObject/Class.h` | `UStruct` 的字段链、`UFunction` 的字段分组 |
+| `CoreUObject/Public/UObject/ObjectMacros.h` | `EPropertyFlags`（`CPF_*`） |
+
+UE4 的 `UProperty` 体系只在[最后一节](#背景ue4-的-uproperty已废弃)作为背景出现。
+:::
+
+## 六个名词，先给定义
 
 | 名词 | 定义 | 出处 |
 |---|---|---|
-| **`FField`** | **「Base class of reflection data objects」**——反射数据的基类 | [UAssetAPI `FieldTypes/FField.cs`](https://github.com/atenfyr/UAssetAPI/blob/master/UAssetAPI/FieldTypes/FField.cs) 的类注释原文 |
-| **`FProperty`** | 属性的类型描述对象（`FField` 的派生体系），UE5 里取代了 UE4 的 `UProperty` | 见下文迁移表 |
-| **`UProperty`** | UE4 的属性类型描述对象，**是 `UObject` 的子类** | [UE4 公开源码 `UnrealType.h`](https://github.com/EpicGames/UnrealTournament/blob/master/Engine/Source/Runtime/CoreUObject/Public/UObject/UnrealType.h) |
+| **`FField`** | 反射数据的基类。**不是 `UObject`**，是一套独立的轻量类型层次 | 类注释原文 *Base class of reflection data objects*（[UAssetAPI](https://github.com/atenfyr/UAssetAPI/blob/master/UAssetAPI/FieldTypes/FField.cs)） |
+| **`FFieldClass`** | 字段的「类」——描述某个 `FField` 子类型的元信息 | UE 5.8 `Field.h`，见下 |
+| **`FProperty`** | 属性的类型描述对象，`FField` 的派生体系；**UE5 里取代了 UE4 的 `UProperty`** | UE 5.8 `UnrealType.h`，见下 |
+| **`FFieldVariant`** | 能装 `UObject` 或 `FField` 的容器，为这次迁移而存在 | UE 5.8 `Field.h`，见[下文](#为什么会有-ffieldvariant) |
 | **`FFieldPath`** | 一条「按名字逐级定位字段」的路径，附带拥有者 | [CUE4Parse `FFieldPath.cs`](https://github.com/FabianFG/CUE4Parse/blob/master/CUE4Parse/UE4/Objects/UObject/FFieldPath.cs) |
-| **`FKismetPropertyPointer`** | **「Represents a Kismet bytecode pointer to an FProperty or FField」**——字节码里指向属性的指针 | [UAssetAPI `KismetPropertyPointer.cs`](https://github.com/atenfyr/UAssetAPI/blob/master/UAssetAPI/Kismet/Bytecode/KismetPropertyPointer.cs) 的类注释原文 |
+| **`FKismetPropertyPointer`** | 字节码里指向属性/字段的指针 | [UAssetAPI](https://github.com/atenfyr/UAssetAPI/blob/master/UAssetAPI/Kismet/Bytecode/KismetPropertyPointer.cs)；见[第 09 章](/ue5-bp/09-property-pointer) |
 
-注意最后两行的区别：**`FFieldPath` 是「怎么找」，`FKismetPropertyPointer` 是「字节码里怎么存」**。
-后者在[第 09 章](/ue5-bp/09-property-pointer)单独展开。
+## FFieldClass：字段的「类」
 
-## FField 在资产文件里长什么样
+UE 5.8 `Field.h` 里的定义（注释为原文）：
 
-这是最有用的部分——**打包后的 `FField` 序列化出来的字段很少**：
+```cpp
+/**
+ * Object representing a type of an FField struct. 
+ * Mimics a subset of UObject reflection functions.
+ */
+class FFieldClass
+{
+    /** Name of this field class */
+    FName Name;
+    /** Class flags */
+    EClassFlags ClassFlags;
+    /** Unique Id of this field class (for casting) */
+    uint64 Id;
+    /** Cast flags used for casting to other classes */
+    EClassCastFlags CastFlags;
+    /** Super of this class */
+    FFieldClass* SuperClass;
+    /** Default instance of this class */
+    FField* DefaultObject;
+    /** Pointer to a function that can construct an instance of this class */
+    FConstructFunction* ConstructFn;
+    /** Counter for generating runtime unique names */
+    std::atomic<int32> UniqueNameIndexCounter = 0;
+};
+```
+
+那句类注释值得抄下来：**「Object representing a type of an FField struct. Mimics a subset of UObject
+reflection functions.」**——它明确说了这是一套**模仿 `UObject` 反射功能、但更轻**的平行体系。
+
+`FFieldClass` 里有 `Name` / `SuperClass` / `CastFlags` / `Id`，所以**字段类型本身也能被按名字查找和类型转换**。
+这解释了为什么 [Dumper-7](/ue5-re/07-toolchain) 需要在运行时去定位 `FFieldClass::Name` 的偏移——
+它不是一个编译期常量。
+
+## UStruct 上的两条链：Children 与 ChildProperties
+
+这是 UE5 相对 UE4 最直观的变化。UE 5.8 `Class.h` 里 `UStruct` 同时有两条链：
+
+```cpp
+/** Pointer to start of linked list of child fields */
+FField* ChildProperties;
+
+/** Total size of all UProperties, the allocated structure may be larger due to alignment */
+int32 PropertiesSize;
+/** Alignment of structure in memory, structure will be at least this large */
+int16 MinAlignment;
+
+/** Script bytecode associated with this object */
+TArray<uint8> Script = {};
+```
+
+（`Class.h`；构造函数初始化列表里同时能看到 `Children(StructParams.FirstChild)` 与
+`ChildProperties(StructParams.ChildProperties)`，说明两条链并存）
+
+| 链 | 类型 | 装什么 |
+|---|---|---|
+| `Children` | `UField*` | **类型层次**：子类、子函数、子结构（这些是 `UObject`） |
+| `ChildProperties` | `FField*` | **属性/字段**（这些**不是** `UObject`） |
+
+UE4 时代只有 `Children` 一条链，属性（`UProperty`）也挂在上面，因为它是 `UObject`。
+UE5 把属性挪到了 `ChildProperties`，于是**「遍历一个类的所有属性」这件事换了入口**。
+
+`UStruct` 上还有一组**只在内存里**的链表（UE 5.8 `Class.h`，注释为原文）：
+
+```cpp
+/** In memory only: Linked list of properties from most-derived to base */
+FProperty* PropertyLink;
+/** In memory only: Linked list of object reference properties from most-derived to base */
+FProperty* RefLink;
+/** In memory only: Linked list of properties requiring destruction. ... */
+FProperty* DestructorLink;
+/** In memory only: Linked list of properties requiring post constructor initialization */
+FProperty* PostConstructLink;
+```
+
+::: warning 注意这四条在 UE4 里挂在 `UProperty` 上
+UE4 的 `PropertyLinkNext` / `NextRef` / `DestructorLinkNext` / `PostConstructLinkNext` 是 **`UProperty` 的成员**；
+UE5 把它们提升到了 `UStruct`（`PropertyLink` / `RefLink` / `DestructorLink` / `PostConstructLink`）。
+
+**「属性链表挂在哪」这件事本身变了**，任何按 UE4 结构写的遍历代码在 UE5 上都不成立。
+:::
+
+## FProperty：字段分两类
+
+UE 5.8 `UnrealType.h`（注释为原文）：
+
+```cpp
+class FProperty : public FField
+{
+    DECLARE_FIELD_API(FProperty, FField, CASTCLASS_FProperty, UE_API)
+
+    // Persistent variables.
+    int32           ArrayDim;
+    UE_DEPRECATED(5.5, "Use GetElementSize/SetElementSize instead.")
+    int32           ElementSize;
+public:
+    EPropertyFlags  PropertyFlags;
+    uint16          RepIndex;
+
+private:
+    TEnumAsByte<ELifetimeCondition> BlueprintReplicationCondition;
+
+#if WITH_EDITORONLY_DATA || WITH_METADATA
+    union
+    {
+        /** Index of the property within its owner, inclusive of base properties. Generated during Link(). */
+        int32 IndexInOwner = -1;
+        // ...
+    };
+#endif
+
+    // In memory variables (generated during Link()).
+    int32       Offset_Internal;
+```
+
+三个要点：
+
+1. **`ElementSize` 在 5.5 已废弃**（`UE_DEPRECATED(5.5, "Use GetElementSize/SetElementSize instead.")`）——
+   现在要通过访问器读，别再直接摸字段；
+2. **`Offset_Internal` 与 `IndexInOwner` 都是 `Link()` 时生成的**（注释原文 *Generated during Link()*）——
+   **资产文件里没有属性偏移**；
+3. **`PropertyFlags` 是 `EPropertyFlags`**（64 位），是判定参数/in-out 的唯一依据（[见下](#ePropertyFlags判定参数与-inout-的唯一依据)）。
+
+### 为什么「偏移不在文件里」这件事很重要
+
+因为它是**静态逆向与运行时逆向的分界线**：
+
+- 你在 `.uasset` 里能拿到「有哪些属性、叫什么、什么类型」；
+- 但拿不到「这个属性在对象内存里的偏移」——那要等引擎加载资产、调 `Link()` 之后才算出来。
+
+这也解释了为什么[运行时逆向那一专题](/ue5-re/01-object-model)要用 Dumper-7 的
+`FindUObjectNameOffset()` 这类**探测函数**去内存里找偏移：**偏移是运行时才知道的**。
+
+## 资产文件里的 FField 长什么样
+
+上面都是**运行时**的结构。**打包后的资产文件里，`FField` 序列化出来的字段极少**
+（[UAssetAPI `FieldTypes/FField.cs`](https://github.com/atenfyr/UAssetAPI/blob/master/UAssetAPI/FieldTypes/FField.cs)）：
 
 ```csharp
 public class FField
@@ -45,8 +193,6 @@ public class FField
     }
 }
 ```
-
-（出自 [UAssetAPI `FieldTypes/FField.cs`](https://github.com/atenfyr/UAssetAPI/blob/master/UAssetAPI/FieldTypes/FField.cs)）
 
 两个必须记住的结论：
 
@@ -73,116 +219,69 @@ public virtual void Deserialize(FAssetArchive Ar)
 UE 5.8 起，editor-only 过滤的包里**连 `Flags` 都不写了**。又一次「按版本分支」。
 :::
 
-## UE4 的 UProperty：字段分两类
+## 为什么会有 FFieldVariant
 
-引擎源码把成员分成了「持久变量」和「内存变量」两组，这个区分极其重要：
+UE 5.8 `Field.h` 里这个容器的类注释，就是 Epic 自己对这次迁移的说明（原文照抄）：
 
 ```cpp
-class COREUOBJECT_API UProperty : public UField
-{
-    // Persistent variables.
-    int32   ArrayDim;
-    int32   ElementSize;
-    uint64  PropertyFlags;
-    uint16  RepIndex;
-    FName   RepNotifyFunc;
-
-private:
-    // In memory variables (generated during Link()).
-    int32   Offset_Internal;
-
-    ELifetimeCondition BlueprintReplicationCondition;
-
-public:
-    /** In memory only: Linked list of properties from most-derived to base **/
-    UProperty* PropertyLinkNext;
-    /** In memory only: Linked list of object reference properties from most-derived to base **/
-    UProperty* NextRef;
-    /** In memory only: Linked list of properties requiring destruction. **/
-    UProperty* DestructorLinkNext;
-    /** In memory only: Linked list of properties requiring post constructor initialization. **/
-    UProperty* PostConstructLinkNext;
-};
+/**
+ * Special container that can hold either UObject or FField.
+ * Exposes common interface of FFields and UObjects for easier transition from UProperties to FProperties.
+ * DO NOT ABUSE. IDEALLY THIS SHOULD ONLY BE FFIELD INTERNAL STRUCTURE FOR HOLDING A POINTER TO THE OWNER OF AN FFIELD.
+ */
 ```
 
-（出自 [UE4 公开源码 `UnrealType.h`](https://github.com/EpicGames/UnrealTournament/blob/master/Engine/Source/Runtime/CoreUObject/Public/UObject/UnrealType.h)）
+**「for easier transition from UProperties to FProperties」**——官方明说了这个容器是为迁移服务的。
+它的存在本身就证明了：UE5 的属性世界里，「拥有者」既可能是 `UObject`（比如 `UClass`），
+也可能是 `FField`（比如 `FStructProperty` 里的内部属性），所以需要一个能装两种东西的联合体。
 
-关键点：**`ElementSize` 与 `Offset_Internal` 是「Link() 时生成」的**。这意味着：
+## 背景：UE4 的 UProperty（已废弃）
 
-- **资产文件里没有属性偏移**。你在 `.uasset` 里拿不到「这个属性在对象内存里的偏移」；
-- 偏移是引擎加载资产、调用 `Link()` 之后算出来的；
-- 这也解释了为什么[运行时逆向那一专题](/ue5-re/01-object-model)要用 Dumper-7 的 `FindUObjectNameOffset()` 这类**探测函数**去找偏移——
-  **偏移是运行时才知道的，静态文件里根本没有**。
+UE4 的属性类型描述对象叫 `UProperty`，**它是 `UObject` 的子类**（`UProperty : public UField : public UObject`）。
+因此 UE4 时代可以「遍历对象数组找 `UProperty`」——这在 UE5 里**不再可能**，因为 `FProperty` 不在对象数组里。
 
-CUE4Parse 的 UE4 侧实现也印证了这一点：它只读 `ArrayDim` / `PropertyFlags` / `RepNotifyFunc` /
-`BlueprintReplicationCondition`，**不读 `ElementSize` 和 `Offset_Internal`**。
+UE4 里那几个「内存链表」是挂在 `UProperty` 自己身上的（`PropertyLinkNext` / `NextRef` /
+`DestructorLinkNext` / `PostConstructLinkNext`），而 UE5 把它们提升到了 `UStruct`（见[上文](#ustruct-上的两条链children-与-childproperties)）。
 
-（出自 [CUE4Parse `UnrealTypeLegacy.cs`](https://github.com/FabianFG/CUE4Parse/blob/master/CUE4Parse/UE4/Objects/UObject/UnrealTypeLegacy.cs)；
-文件名里的 **Legacy** 就是这个意思）
-
-## UE4 → UE5：从 UProperty 到 FProperty
-
-| | UE4 | UE5（4.25 起） |
-|---|---|---|
-| 属性类型对象 | `UProperty`（**是 `UObject`**） | `FProperty`（**不是 `UObject`**，属于 `FField` 体系） |
-| 能否在对象数组里找到 | ✅ 能 | ❌ 不能，要顺着 `UStruct` 的字段链走 |
-| 字节码里的属性引用 | `FPackageIndex`（指向 Import/Export） | `FFieldPath`（名字路径 + 拥有者） |
-| 两个库的文件名 | `UnrealTypeLegacy.cs` | `UnrealType.cs` |
-
-（前两行的依据：`UProperty : public UField : public UObject` 见 `UnrealType.h`；`FField` 的定位见
-[UAssetAPI](https://github.com/atenfyr/UAssetAPI/blob/master/UAssetAPI/FieldTypes/FField.cs) 与
-[CUE4Parse](https://github.com/FabianFG/CUE4Parse/blob/master/CUE4Parse/UE4/Objects/UObject/FField.cs)
-里它都是**独立于 `UObject` 的普通类**；第三行见[第 09 章](/ue5-bp/09-property-pointer)）
-
-这个迁移的实用后果：**UE4 时代可以「遍历对象数组找 UProperty」，UE5 不行了**。
-属性变成了非 `UObject` 的轻量对象，只能从类型（`UStruct`/`UClass`）往下走。
+::: tip 对照着看更清楚
+两个库的文件名就是这段历史的化石：CUE4Parse 里
+[`UnrealTypeLegacy.cs`](https://github.com/FabianFG/CUE4Parse/blob/master/CUE4Parse/UE4/Objects/UObject/UnrealTypeLegacy.cs)
+是 UE4 的 `UProperty`，[`UnrealType.cs`](https://github.com/FabianFG/CUE4Parse/blob/master/CUE4Parse/UE4/Objects/UObject/UnrealType.cs)
+是 UE5 的 `FProperty`。
+:::
 
 ## EPropertyFlags：判定参数与 in/out 的唯一依据
 
-属性标志位是 64 位（`ulong`），UE3 某个版本后从 32 位扩到 64 位
-（`PropertyFlagsSizeExpandedTo64Bits`，见 `UnrealTypeLegacy.cs` 的读取分支）。常用取值：
+标志位是 **64 位**，定义在 UE 5.8 `ObjectMacros.h`（注释为原文）：
 
-| 标志 | 值 | 含义（注释原文） |
+| 标志 | 值 | 含义 |
 |---|---|---|
-| `Edit` | `0x1` | Property is user-settable in the editor |
-| `ConstParm` | `0x2` | This is a constant function parameter |
-| `BlueprintVisible` | `0x4` | This property can be read by blueprint code |
-| `ExportObject` | `0x8` | Object can be exported with actor |
-| `BlueprintReadOnly` | `0x10` | This property cannot be modified by blueprint code |
-| `Net` | `0x20` | Property is relevant to network replication |
-| **`Parm`** | `0x80` | **Function/When call parameter** |
-| **`OutParm`** | `0x100` | **Value is copied out after function call** |
-| `ZeroConstructor` | `0x200` | memset is fine for construction |
-| **`ReturnParm`** | `0x400` | **Return value** |
-| `Transient` | `0x2000` | 不该被保存/加载（蓝图 CDO 除外） |
-| `RequiredParm` | `0x8000` | 蓝图里必须连接，否则编译报错 |
-| **`ReferenceParm`** | `0x8000000` | **按引用传递；注释明确要求同时设置 OutParm 与 Parm** |
+| `CPF_Edit` | `0x1` | Property is user-settable in the editor. |
+| `CPF_ConstParm` | `0x2` | This is a constant function parameter |
+| `CPF_BlueprintVisible` | `0x4` | This property can be read by blueprint code |
+| `CPF_ExportObject` | `0x8` | Object can be exported with actor. |
+| `CPF_BlueprintReadOnly` | `0x10` | This property cannot be modified by blueprint code |
+| `CPF_Net` | `0x20` | Property is relevant to network replication. |
+| `CPF_EditFixedSize` | `0x40` | 数组元素可改，但大小不能变 |
+| **`CPF_Parm`** | `0x80` | **Function/When call parameter.** |
+| **`CPF_OutParm`** | `0x100` | **Value is copied out after function call.** |
+| `CPF_ZeroConstructor` | `0x200` | memset is fine for construction |
+| **`CPF_ReturnParm`** | `0x400` | **Return value.** |
+| `CPF_NonNullable` | `0x1000` | Object property can never be null |
+| `CPF_Transient` | `0x2000` | 不该被保存/加载（蓝图 CDO 除外） |
+| `CPF_Config` | `0x4000` | 作为永久 profile 加载/保存 |
+| `CPF_RequiredParm` | `0x8000` | 蓝图里必须显式连接，否则编译报错 |
+| `CPF_Virtual` | `0x4000000` | 定义在接口上，**没有可用的 `Offset_Internal`** |
+| **`CPF_ReferenceParm`** | `0x8000000` | **按引用传递；注释要求同时设置 `CPF_OutParm` 与 `CPF_Parm`** |
 
-（出自 [CUE4Parse `UnrealType.cs`](https://github.com/FabianFG/CUE4Parse/blob/master/CUE4Parse/UE4/Objects/UObject/UnrealType.cs) 的 `EPropertyFlags` 枚举，注释为原文）
-
-还有两个「组合掩码」，直接给了判定方法：
-
-```csharp
-/// <summary>
-/// All parameter flags
-/// </summary>
-ParmFlags = Parm | OutParm | ReturnParm | ReferenceParm | ConstParm | RequiredParm,
-```
-
-（同上）
+（出自 UE 5.8 `CoreUObject/Public/UObject/ObjectMacros.h` 的 `enum EPropertyFlags : uint64`）
 
 **这就是「怎么判断一个属性是不是函数参数、是不是 out、是不是返回值」的答案**：
 拿 `PropertyFlags & ParmFlags` 判断，而不是靠名字猜。
 
-::: tip 这和反编译有什么关系
-本站 [KismetDecompiler README](https://github.com/CCB-TEAM/KismetDecompiler) 里说的
-「`FunctionSignatures` 从 `LoadedProperties` 取出真实签名（参数名/类型/**in-out**/局部变量）」，
-其中的 in-out 判定就是查这一组标志位。细节见[第 10 章](/ue5-bp/10-loaded-properties)。
-:::
-
 ### 顺带一个可访问性的映射
 
-同一个文件里还有把标志位映射成访问级别的逻辑：
+CUE4Parse 里有把标志位映射成访问级别的逻辑：
 
 ```csharp
 if (PropertyFlags.HasFlag(EPropertyFlags.BlueprintVisible) ||
@@ -193,14 +292,21 @@ if (PropertyFlags.HasFlag(EPropertyFlags.Edit))
 return EAccessMode.Private;
 ```
 
-（同上）
+（出自 [CUE4Parse `UnrealType.cs`](https://github.com/FabianFG/CUE4Parse/blob/master/CUE4Parse/UE4/Objects/UObject/UnrealType.cs)）
 
 也就是说：**「蓝图里能不能看到这个变量」完全由标志位决定**，反过来也成立——
 你在蓝图里看到 `Public` 变量，它的 `BlueprintVisible` 或 `BlueprintReadOnly` 一定被置上了。
+
+::: tip 这和反编译有什么关系
+本站 [KismetDecompiler README](https://github.com/CCB-TEAM/KismetDecompiler) 里说的
+「`FunctionSignatures` 从 `LoadedProperties` 取出真实签名（参数名/类型/**in-out**/局部变量）」，
+其中的 in-out 判定就是查这一组标志位。细节见[第 10 章](/ue5-bp/10-loaded-properties)。
+:::
 
 ## 相关
 
 - [07 · 反射对象的字段级定义](/ue5-bp/07-structures) —— 这些属性挂在哪个结构上
 - [09 · FKismetPropertyPointer](/ue5-bp/09-property-pointer) —— 字节码里怎么指向一个属性
 - [10 · LoadedProperties 与签名还原](/ue5-bp/10-loaded-properties) —— 用标志位还原函数签名
+- [13 · UE5 蓝图虚拟机](/ue5-bp/13-vm) —— 属性在运行时怎么被读写
 - [附录 · 出处清单](/ue5-bp/appendix/sources)

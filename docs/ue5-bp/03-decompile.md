@@ -22,7 +22,9 @@ class FKismetBytecodeDisassembler
     UNREALED_API void DisassembleStructure(UFunction* Source);
 ```
 
-（出自 [`ScriptDisassembler.h`](https://github.com/EpicGames/UnrealTournament/blob/master/Engine/Source/Editor/UnrealEd/Public/ScriptDisassembler.h)）
+（UE4 里的位置：[`Editor/UnrealEd/Public/ScriptDisassembler.h`](https://github.com/EpicGames/UnrealTournament/blob/master/Engine/Source/Editor/UnrealEd/Public/ScriptDisassembler.h)。
+⚠️ **在 UE 5.8 的源码树里这个路径已不存在**——多个候选路径均返回 404，可能被移动或移除；
+需要时请在自己有权限的副本里检索 `FKismetBytecodeDisassembler`）
 
 两个信息值得注意：
 
