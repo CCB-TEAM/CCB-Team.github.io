@@ -207,6 +207,15 @@ export default defineConfig({
           ],
         },
         {
+          text: '结构详解',
+          items: [
+            { text: '07 · 反射对象的字段级定义', link: '/ue5-bp/07-structures' },
+            { text: '08 · 属性系统：FField 与 FProperty', link: '/ue5-bp/08-property-system' },
+            { text: '09 · FKismetPropertyPointer', link: '/ue5-bp/09-property-pointer' },
+            { text: '10 · LoadedProperties 与签名还原', link: '/ue5-bp/10-loaded-properties' },
+          ],
+        },
+        {
           text: '附录',
           items: [
             { text: '出处清单', link: '/ue5-bp/appendix/sources' },

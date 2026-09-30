@@ -25,6 +25,9 @@ title: 附录 · 出处清单
 | A2 | [`ScriptDisassembler.h`](https://github.com/EpicGames/UnrealTournament/blob/master/Engine/Source/Editor/UnrealEd/Public/ScriptDisassembler.h) | 引擎自带 `FKismetBytecodeDisassembler` 的定位（「create a human readable version」）与它属于 **UnrealEd** 模块（仅编辑器构建） |
 | A3 | [`Class.cpp`](https://github.com/EpicGames/UnrealTournament/blob/master/Engine/Source/Runtime/CoreUObject/Private/UObject/Class.cpp) | 字节码在引擎侧挂在 `UStruct` 上（`ScriptBytecode` 序列化逻辑所在文件） |
 | A4 | [Epic 官方引擎仓库（需关联 Epic 账号）](https://github.com/EpicGames/UnrealEngine) | UE5 侧同名头文件（`Script.h` / `Class.h` / `Object.h`）的对照位置 |
+| A5 | [`Class.h`](https://github.com/EpicGames/UnrealTournament/blob/master/Engine/Source/Runtime/CoreUObject/Public/UObject/Class.h) | `UStruct` 的 `SuperStruct` / `Children` / `PropertiesSize` / `MinAlignment` / `Script`（字节码本体）与 `LinkChild` 的头插链表；`UClass : public UStruct` 及其类级 typedef；`UFunction` 的**持久字段 vs 内存字段**分组（`ParmsSize` / `ReturnValueOffset` / `NumParms` 属于后者） |
+| A6 | [`ObjectResource.h`](https://github.com/EpicGames/UnrealTournament/blob/master/Engine/Source/Runtime/CoreUObject/Public/UObject/ObjectResource.h) | `FPackageIndex` 的定义原文：正值指向 ExportMap（下标 = 值−1），负值指向 ImportMap（下标 = −值−1） |
+| A7 | [`UnrealType.h`](https://github.com/EpicGames/UnrealTournament/blob/master/Engine/Source/Runtime/CoreUObject/Public/UObject/UnrealType.h) | `UProperty` 的字段分组：`ArrayDim` / `ElementSize` / `PropertyFlags` / `RepIndex` / `RepNotifyFunc` 为持久，`Offset_Internal` 与四个链表指针注明「In memory only / generated during Link()」 |
 
 ::: warning 版本提醒
 `EpicGames/UnrealTournament` 是**公开可读的 UE4 源码镜像**，对应较早的 UE4 版本。
@@ -47,6 +50,14 @@ title: 附录 · 出处清单
 | B9 | [KismetKompiler README](https://github.com/tge-was-taken/KismetKompiler) | 反编译 + **编译**（`.kms` / KisMetScript）、**自动等价性校验**、编辑能力边界、`--usmap` / `--global`、主要用 UE 4.23 资产测试 |
 | B10 | [`bp-decompiler-poc`](https://github.com/kt-gibson/bp-decompiler-poc) / [`uasset-decompiler`](https://github.com/gpostolskiy-work3/uasset-decompiler) | 更早期的往返尝试（蓝图 → 受 Verse 启发的文本 → 回编译） |
 | B11 | [UE4SS · Blueprint Modloading](https://docs.ue4ss.com/feature-overview/blueprint-modloader.html) | 运行时加载蓝图 mod 的官方说明（内容较薄，注明基于 RussellJ 的方案） |
+| B12 | [`UAssetAPI/ExportTypes/StructExport.cs`](https://github.com/atenfyr/UAssetAPI/blob/master/UAssetAPI/ExportTypes/StructExport.cs) | **`LoadedProperties` 的定义原文**（"Properties serialized with this struct definition"）；`StructExport` 的字段与读取顺序；两个版本门（`FFrameworkObjectVersion.RemoveUField_Next`、`FCoreObjectVersion.FProperties`）；`ScriptBytecodeSize` / `ScriptBytecodeRaw` 的兜底语义 |
+| B13 | [`UAssetAPI/Kismet/Bytecode/KismetPropertyPointer.cs`](https://github.com/atenfyr/UAssetAPI/blob/master/UAssetAPI/Kismet/Bytecode/KismetPropertyPointer.cs) | **`KismetPropertyPointer` 的定义原文**（"Represents a Kismet bytecode pointer to an FProperty or FField"）与 `Old` / `New` 两种形态及各自适用的版本门 |
+| B14 | [`UAssetAPI/FieldTypes/FField.cs`](https://github.com/atenfyr/UAssetAPI/blob/master/UAssetAPI/FieldTypes/FField.cs) | `FField` 的类注释（"Base class of reflection data objects"）与序列化字段；`MetaDataMap` 仅在非 editor-only 且未 cook 时读取 |
+| B15 | [`CUE4Parse/UE4/Objects/UObject/FField.cs`](https://github.com/FabianFG/CUE4Parse/blob/master/CUE4Parse/UE4/Objects/UObject/FField.cs) | `FField` 的另一套实现；**UE 5.8 起 editor-only 包里不再序列化 `Flags`** |
+| B16 | [`CUE4Parse/UE4/Objects/UObject/FFieldPath.cs`](https://github.com/FabianFG/CUE4Parse/blob/master/CUE4Parse/UE4/Objects/UObject/FFieldPath.cs) | `FFieldPath` 的 `Path`（`FName[]`）与 `ResolvedOwner`；`None` 路径归一化；`Ar.Index = index + 8`（**指针固定占 8 字节**） |
+| B17 | [`CUE4Parse/UE4/Objects/UObject/UnrealTypeLegacy.cs`](https://github.com/FabianFG/CUE4Parse/blob/master/CUE4Parse/UE4/Objects/UObject/UnrealTypeLegacy.cs) | UE4 侧 `UProperty` 的实际读取字段（`ArrayDim` / `PropertyFlags` / `RepNotifyFunc` / `BlueprintReplicationCondition`），**不含 `ElementSize` 与 `Offset_Internal`**——印证偏移不在文件里 |
+| B18 | [`CUE4Parse/UE4/Objects/UObject/UnrealType.cs`](https://github.com/FabianFG/CUE4Parse/blob/master/CUE4Parse/UE4/Objects/UObject/UnrealType.cs) | `EPropertyFlags` 枚举全表（含 `Parm` / `OutParm` / `ReturnParm` / `ReferenceParm` 的注释原文）与 `ParmFlags` 组合掩码；标志位到 `EAccessMode` 的映射 |
+| B19 | UAssetAPI 的表达式实现：[`EX_VariableBase.cs`](https://github.com/atenfyr/UAssetAPI/blob/master/UAssetAPI/Kismet/Bytecode/Expressions/EX_VariableBase.cs)、[`EX_PropertyConst.cs`](https://github.com/atenfyr/UAssetAPI/blob/master/UAssetAPI/Kismet/Bytecode/Expressions/EX_PropertyConst.cs)、[`EX_StructMemberContext.cs`](https://github.com/atenfyr/UAssetAPI/blob/master/UAssetAPI/Kismet/Bytecode/Expressions/EX_StructMemberContext.cs)、[`EX_FieldPathConst.cs`](https://github.com/atenfyr/UAssetAPI/blob/master/UAssetAPI/Kismet/Bytecode/Expressions/EX_FieldPathConst.cs) | 哪些操作码持有 `KismetPropertyPointer`；`offset += 8` 的偏移计算；`EX_VariableBase` 基类暴露的 `EX_ClassSparseDataVariable` 这一新增操作码 |
 
 ## C · 工具官方文档
 

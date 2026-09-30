@@ -58,7 +58,16 @@ title: UE5 蓝图逆向 · 总览
 | [04 · 工具全景](/ue5-bp/04-tooling) | 反编译 / AST / 往返编译 / 运行时 四类工具，各自的边界 |
 | [05 · 罕见之处](/ue5-bp/05-pitfalls) | 逐游戏操作码扩展、UE4→UE5 的结构变化、坑清单 |
 | [06 · 上手路径](/ue5-bp/06-practice) | 从拿到一个 `.uasset` 到读懂一个函数，以及本站是怎么做的 |
+| [07 · 反射对象的字段级定义](/ue5-bp/07-structures) | `FPackageIndex` 的 Import/Export 语义、`UStruct`/`UClass`/`UFunction`/`UProperty` 的字段表，以及**哪些字段根本不在文件里** |
+| [08 · 属性系统：FField 与 FProperty](/ue5-bp/08-property-system) | `FField` / `FProperty` 的定义、UE4→UE5 迁移、`EPropertyFlags` 全表与 `ParmFlags` |
+| [09 · FKismetPropertyPointer](/ue5-bp/09-property-pointer) | 字节码里指向属性的指针：两种形态、版本门、为什么固定占 8 字节 |
+| [10 · LoadedProperties 与签名还原](/ue5-bp/10-loaded-properties) | 函数签名（参数名/类型/in-out）从哪来，以及它和 `.usmap` 的分工 |
 | [附录 · 出处清单](/ue5-bp/appendix/sources) | 全部来源与它们支撑的结论 |
+
+::: tip 07–10 是「参考手册」那一半
+前六章按**流程**走（资产 → 字节码 → 反编译 → 工具 → 坑 → 上手）；07–10 按**结构**走，是查定义用的：
+想知道 `LoadedProperties` 是什么、`ParmsSize` 为什么不在文件里、`FFieldPath` 和 `FPackageIndex` 差在哪，直接跳过去看。
+:::```
 
 ## 与本站已有内容的分工
 
