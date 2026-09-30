@@ -282,10 +282,13 @@ EX_JumpIfNot { BooleanExpression: C, CodeOffset: <body 之后> }
 | `0x6B` | `EX_ArrayGetByRef` | [本章 · 成员访问](/ue5-bp/12-opcodes-b) |
 | `0x100` | `EX_Max` | 枚举上界，非实际操作码 |
 
-::: warning 0x6C–0xFF 是空档，但不是「没有」
-这一段在官方表里是空的，**游戏厂商会往这里塞自定义指令**——
-鸣潮的 `EX_6E`/`EX_6F`、Borderlands 4 的 `EX_FD`/`EX_FE` 就是实例，见
-[第 05 章 · 罕见之处](/ue5-bp/05-pitfalls)。
+::: warning 空档在哪：以 UE 5.8 为准
+公开的 UE4 表里 `0x6C` 之后是空的，但**UE 5.8 的引擎自己用到了 `0x6D`**
+（`0x6C` = `EX_ClassSparseDataVariable`、`0x6D` = `EX_FieldPathConst`，且 `EX_Max` 从 `0x100` 变成 `0xFF`）。
+
+所以厂商可用的空间是 **`0x6E`–`0xFE`**——鸣潮的 `EX_6E`/`EX_6F`、Borderlands 4 的 `EX_FD`/`EX_FE`
+正好落在这里，见 [第 05 章 · 罕见之处](/ue5-bp/05-pitfalls)。
+完整的 UE 5.8 取值对照见 [第 13 章 · UE5 蓝图虚拟机](/ue5-bp/13-vm)。
 :::
 
 ## 相关

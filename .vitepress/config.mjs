@@ -223,6 +223,12 @@ export default defineConfig({
           ],
         },
         {
+          text: '虚拟机',
+          items: [
+            { text: '13 · UE5 蓝图虚拟机', link: '/ue5-bp/13-vm' },
+          ],
+        },
+        {
           text: '附录',
           items: [
             { text: '出处清单', link: '/ue5-bp/appendix/sources' },
