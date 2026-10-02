@@ -179,6 +179,7 @@ export default defineConfig({
             { text: '07 · 工具链', link: '/ue5-re/07-toolchain' },
             { text: '08 · 定位路径速查', link: '/ue5-re/08-anchor-paths' },
             { text: '09 · MinHook 上手', link: '/ue5-re/09-minhook' },
+            { text: '10 · UE4SS Lua 模块', link: '/ue5-re/10-ue4ss-lua' },
           ],
         },
         {

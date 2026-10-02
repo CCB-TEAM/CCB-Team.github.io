@@ -7,6 +7,10 @@ title: UE5 游戏手动逆向 · 总览
 这个专题整理**公开资料**里关于「手动」逆向 Unreal Engine 4/5 游戏的方法：不依赖现成的一键 dumper，而是自己找到
 `GObjects`、`GNames`、`GWorld`、`ProcessEvent` 这些锚点，再用它们去读写对象、调用函数。
 
+[第 10 章](/ue5-re/10-ue4ss-lua)是这条路线的一个对照面：用 UE4SS 的 Lua 层做同样的事。
+把它放在最后，是因为**看懂它的前提就是前九章**——Lua 里那些 `obj.SomeProperty`、
+`FindAllOf(...)` 底下用的，正是你在这里手工定位的 `GUObjectArray` 与名称池。
+
 素材来自可公开访问的一手来源——Epic 的引擎源码路径、UE4SS / Dumper-7 等开源项目的文档与源码、工具官方文档。
 **正文逐条标注出处**，全部来源汇总在[附录 · 出处清单](/ue5-re/appendix/sources)。
 
@@ -40,6 +44,7 @@ title: UE5 游戏手动逆向 · 总览
 | [07 · 工具链](/ue5-re/07-toolchain) | UE4SS / Dumper-7 / CUE4Parse / IDA / Ghidra / x64dbg 等，以及学习路径 |
 | [08 · 定位路径速查](/ue5-re/08-anchor-paths) | **九条从入口到目标的路径**：`StaticConstructObject` → `GUObjectArray`、`FName::ToString` → 名称池、`PersistentLevel` → 演员……附 UE 5.8 源码证据与优先级建议 |
 | [09 · MinHook 上手](/ue5-re/09-minhook) | 三种 hook 位置对比、MinHook API、VMT hook `ProcessEvent`、替换 `GNatives` 表项、可编译骨架与崩溃排查清单 |
+| [10 · UE4SS Lua 模块](/ue5-re/10-ue4ss-lua) | mod 目录与加载顺序、`__index` 反射桥的原理、对象查找族函数、hook 体系、线程模型、`UE4SS_Signatures`，以及与手动路线的取舍 |
 | [附录 · 出处清单](/ue5-re/appendix/sources) | 全部来源、编号与它们各自支撑的结论 |
 
 ## 术语表
