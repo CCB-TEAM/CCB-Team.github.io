@@ -55,7 +55,8 @@ MH_STATUS MH_ApplyQueued(void);
 
 两个必须知道的点：
 
-1. **`MH_ALL_HOOKS` 是 `NULL`**：`MH_EnableHook(MH_ALL_HOOKS)` 会启停全部已创建的 hook；
+1. **`MH_ALL_HOOKS` 是 `NULL`，但只有 `Enable`/`Disable`/`QueueEnable`/`QueueDisable` 认它**：
+   `MH_EnableHook(MH_ALL_HOOKS)` 会启停全部已创建的 hook。**`MH_RemoveHook` 不认**——见下面的警告；
 2. **多个 hook 要用队列 API**。官方 README 的原话是：
    *"This is the preferred way of handling multiple hooks as every call to `MH_EnableHook` or `MH_DisableHook`
    suspends and resumes all threads."*——**每次 `MH_EnableHook` 都会挂起并恢复所有线程**，
@@ -85,7 +86,7 @@ bool InitHooks()
 void UninitHooks()
 {
     MH_DisableHook(MH_ALL_HOOKS);
-    MH_RemoveHook(MH_ALL_HOOKS);
+    MH_RemoveHook(g_target);   // ← 必须传目标地址，MH_ALL_HOOKS 在这里无效
     MH_Uninitialize();
 }
 ```
@@ -93,6 +94,46 @@ void UninitHooks()
 ::: warning 卸载顺序
 `MH_DisableHook` → `MH_RemoveHook` → `MH_Uninitialize`。
 顺序错了会在游戏退出时崩——这类崩溃很容易被误判成「hook 写错了」。
+:::
+
+::: danger `MH_RemoveHook(MH_ALL_HOOKS)` 是个静默空操作
+上面的卸载片段在社区里流传很广（本章早期版本也这么写），但**那一行是错的**。
+
+MinHook 的 `hook.c` 里，`MH_EnableHook` / `MH_DisableHook` / `MH_QueueEnableHook` /
+`MH_QueueDisableHook` 都有 `pTarget == MH_ALL_HOOKS` 的分支，**`MH_RemoveHook` 没有**：
+
+```c
+MH_STATUS WINAPI MH_RemoveHook(LPVOID pTarget)
+{
+    ...
+    UINT pos = FindHookEntry(pTarget);   // 没有 MH_ALL_HOOKS 分支
+    if (pos != INVALID_HOOK_POS) { /* 移除这一个 */ }
+    else status = MH_ERROR_NOT_CREATED;
+    ...
+}
+```
+
+而 `FindHookEntry` 是拿参数和每个 hook 的 `pTarget` 逐项比地址。`MH_ALL_HOOKS` 就是 `NULL`，
+于是它去找「target 为 `NULL` 的 hook」，找不到，返回 `MH_ERROR_NOT_CREATED`。
+**一个 hook 都不会被移除，而返回值通常被忽略。**
+
+后果分两种：
+
+| 场景 | 后果 |
+|---|---|
+| `Remove` 之后紧跟 `MH_Uninitialize` | 基本无害——`MH_Uninitialize` 内部会 `EnableAllHooksLL(FALSE)` 并释放 trampoline |
+| 只想摘掉一个 hook、保留 MinHook 初始化继续跑 | **真的漏**：hook 项与 trampoline 都留着 |
+
+正确写法是传**真实的目标地址**：
+
+```cpp
+MH_DisableHook(g_target);
+MH_RemoveHook(g_target);   // 必须传地址
+```
+
+（依据：MinHook `src/hook.c` 的 `MH_RemoveHook` 与 `FindHookEntry` 源码，非二手转述。
+本站在 KARDS（UE 5.6）上实测确认 `MH_RemoveHook(MH_ALL_HOOKS)` 返回 `MH_ERROR_NOT_CREATED`
+且不产生任何移除效果。）
 :::
 
 ---

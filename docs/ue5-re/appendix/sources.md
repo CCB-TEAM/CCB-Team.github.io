@@ -68,7 +68,7 @@ title: 附录 · 出处清单
 |---|---|---|
 | C1 | [x64dbg 文档](https://help.x64dbg.com/en/latest/) | 读内存、断点、表达式与命令体系（UE4SS 流程中的第 2、5 步） |
 | C2 | [Ghidra](https://github.com/NationalSecurityAgency/ghidra) | 静态逆向框架 |
-| C3 | [MinHook](https://github.com/TsudaKageyu/minhook)（`include/MinHook.h` 与 README） | Windows x86/x64 inline hook 库；[09 章](/ue5-re/09-minhook)引用的 API 签名（`MH_CreateHook` / `MH_EnableHook` / `MH_QueueEnableHook` / `MH_ApplyQueued`）、`MH_ALL_HOOKS` 的定义，以及「每次 Enable/Disable 都会挂起并恢复所有线程」这条官方说明 |
+| C3 | [MinHook](https://github.com/TsudaKageyu/minhook)（`include/MinHook.h`、`src/hook.c` 与 README） | Windows x86/x64 inline hook 库；[09 章](/ue5-re/09-minhook)引用的 API 签名（`MH_CreateHook` / `MH_EnableHook` / `MH_QueueEnableHook` / `MH_ApplyQueued`）、`MH_ALL_HOOKS` 的定义，「每次 Enable/Disable 都会挂起并恢复所有线程」这条官方说明，以及 **`MH_RemoveHook` 不支持 `MH_ALL_HOOKS`** 这一行为（`src/hook.c` 中 `MH_RemoveHook` 未做该分支、`FindHookEntry` 按地址逐项比较的源码事实） |
 | C4 | [frida](https://github.com/frida/frida) | 动态插桩框架 |
 
 ## 数据来源
