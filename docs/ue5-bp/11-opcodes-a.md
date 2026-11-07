@@ -167,8 +167,15 @@ UE4 里 `0x67` 是 `EX_AssetConst`，**UE 5.8 里是 `EX_SoftObjectConst`**。
 **`EX_FinalFunction` 与 `EX_VirtualFunction` 的区别**：前者用 `FPackageIndex` 直接绑定目标函数
 （编译期确定），后者用 `FName` 按名字查找（运行期解析）。前者更常见、也更好反编译。
 
-`EX_CallMath` 值得单独说：它是**数学库调用**，本站反编译器会先把
-`Greater_IntInt(a,b)` 这类名字映射成运算符（`a > b`），映射不上才退化成函数调用。
+`EX_CallMath` 值得单独说：它的语义是**静态纯函数**（`BlueprintPure`），引擎注释原文就是
+*static pure function from on local call space*——**不是「数学库」**。
+实测反例：`PrintString` 这种有副作用的调试函数也会被编成 `EX_CallMath`，
+只因为它标了 `BlueprintPure`。
+
+本站反编译器会先把 `Greater_IntInt(a,b)` 这类名字映射成运算符（`a > b`），映射不上才退化成函数调用。
+但那是**渲染层的便利**（`ExprRenderer.cs` 里 `RenderOperator(...) ?? RenderCall(...)`），
+不是字节码语义：`Solstice.Kismet` 的节点树不做这个映射，会直接显示 `Greater_IntInt(...)`。
+读别的工具的产物时别拿这条当语义判据。
 
 （映射规则出自 [KismetDecompiler README](https://github.com/CCB-TEAM/KismetDecompiler)）
 
