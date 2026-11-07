@@ -120,8 +120,23 @@ DEFINE_FUNCTION(UObject::execComputedJump)
 1. **`Push` 不改变执行顺序**。它只是「记下这个地址，以后要用」，然后继续往下跑——
    这和 x86 的 `call` 完全不同（`call` 会跳过去）。
 2. **`Pop` 才是跳转**，跳回最后一次 push 的地址。所以这是一个**后进先出的栈**。
-3. **`Push`/`Pop` 在反编译产物里渲染成空**——你在伪代码里看不到它们，
+3. **`Push`/`Pop` 在本站 `KismetDecompiler` 的伪代码里渲染成空**——你在伪代码里看不到它们，
    但它们是蓝图里「顺序执行节点」「延迟逻辑」的实现基础。
+   **这是 `ExprRenderer` 的选择，不是字节码的性质**：`Solstice.Kismet` 的节点树会把它们显式渲染出来。
+
+::: tip 换一个渲染器就看到它们了
+`ExprRenderer.cs` 里是 `case EX_PushExecutionFlow: return "";`、`case EX_PopExecutionFlow: return "";`。
+而 `Solstice.Kismet` 的节点树对同一个 ubergraph 会给出（实测 `BP_CardFunctions.ExecuteUbergraph_*`）：
+
+```
+#0.1.18 PushFlow -> 886
+#0.1.19 PushFlow -> 706
+#0.1.22 PopFlow
+#0.1.26 PopFlowIfNot K2Node_DynamicCast_bSuccess
+```
+
+两个工具字节都一致，差别只在渲染策略。**要分析执行流栈，用会显示它的那个。**
+:::
 
 运行时的承载就是 `FFrame::FlowStack`（UE 5.8 `Stack.h`）：
 
