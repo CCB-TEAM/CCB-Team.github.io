@@ -18,6 +18,14 @@ CCB-TEAM 的公开工作集中在两条主线：**游戏服务端与协议复刻
 | [kards-server-go](/projects/kards-server-go) | 同一协议面的 Go 实现：Gin + GORM + JWT + MySQL，附预编译 Windows 二进制 |
 | [FyClient](/projects/fyclient) | 虚拟测试客户端：纯 C# 复刻协议，一条命令跑通登录 → 匹配 → 对局 → 结算 |
 
+### KARDS 模组与文档
+
+| 项目 | 说明 |
+|---|---|
+| [KMod-Loader-Windows](https://github.com/CCB-TEAM/KMod-Loader-Windows) | Windows 模组加载器，支持 Lua 与 C++ 原生模组 |
+| [KMod-Loader-Android](https://github.com/CCB-TEAM/KMod-Loader-Android) | Android 模组加载器，通过 UE 反射运行 Lua 模组；安装需重打包并签名 APK |
+| [kmod-docs](https://github.com/CCB-TEAM/kmod-docs) | KMod 的安装、开发与 API 文档 |
+
 ### UE 资产与蓝图工具链
 
 | 项目 | 说明 |
@@ -28,7 +36,11 @@ CCB-TEAM 的公开工作集中在两条主线：**游戏服务端与协议复刻
 | [ULocres](/projects/ulocres) | `.locres` 本地化读写库：四种格式版本全覆盖，未修改内容逐字节一致，对齐 UE 的 CityHash / CRC32 实现 |
 | [KismetDecompiler](/projects/kismetdecompiler) | 蓝图字节码反编译器：AST → C++ 风格伪代码，CFG 结构化与反 `ExecuteUbergraph` |
 | [KismetReactor](/projects/kismetreactor) | WPF 图形化字节码查看 / 编辑器：树视图、跳转可视化、插入表达式与就地修改 |
-| [KardsSim](/projects/kardsim) | 把蓝图 Kismet **直译成 C#** 的本地对局模拟器：1671 个资产 / 42.5 万行，用来训练 AI |
+| [KardsSim](/projects/kardsim) | 把蓝图 Kismet **直译成 C#** 的本地对局模拟器，用于训练和评测 AI |
+| [Flora](https://github.com/CCB-TEAM/Flora) | FModel 定制版本：资产浏览、蓝图图形查看与 pak 打包 |
+| [polaris](https://github.com/CCB-TEAM/polaris) | 面向 UE 5.6 的 C# SDK 与 Kismet 编译工具 |
+| [Solstice-winter](https://github.com/CCB-TEAM/Solstice-winter) | UE cooked 蓝图工作台，提供节点图与跨资产索引；节点视图目前只读 |
+| Solstice 工具库 | [pak](https://github.com/CCB-TEAM/solstice-pak) · [AssetRegistry](https://github.com/CCB-TEAM/solstice-assetregistry) · [bin](https://github.com/CCB-TEAM/solstice-bin) · [jmap](https://github.com/CCB-TEAM/solstice-jmap) · [Kismet](https://github.com/CCB-TEAM/solstice-kismet) · [C# Kismet](https://github.com/CCB-TEAM/solstice-cskismet) |
 
 ### 逆向工程与协议分析
 
@@ -46,29 +58,46 @@ CCB-TEAM 的公开工作集中在两条主线：**游戏服务端与协议复刻
 ## 公开仓库清单
 
 <!-- BEGIN:PROJECTS-TABLE -->
-<!-- 本表由 `npm run sync` 自动生成，请勿手工编辑。仓库数：19 -->
+<!-- 本表由 `npm run sync` 自动生成，请勿手工编辑。仓库数：36 -->
 
 | 仓库 | 方向 | 语言 | Star | 最近推送 | 说明 |
 |---|---|---|---|---|---|
-| [fyserver](/projects/fyserver) | 服务端 / 客户端 | C# | 4 | 2026-09-24 | C# / .NET 10 私服服务端：HTTP + WebSocket 单端口，NativeAOT 单文件发布，自带 Web 后台 |
-| [kards-server-go](/projects/kards-server-go) | 服务端 / 客户端 | Go | 2 | 2026-05-28 | Gin + GORM + MySQL 实现的 KARDS 私服，附预编译 Windows 二进制 |
+| [fyserver](/projects/fyserver) | 服务端 / 客户端 | C# | 14 | 2026-11-17 | C# / .NET 10 私服服务端：HTTP + WebSocket 单端口，NativeAOT 单文件发布，自带 Web 后台 |
+| [kards-server-go](/projects/kards-server-go) | 服务端 / 客户端 | Go | 5 | 2026-11-03 | Gin + GORM + MySQL 实现的 KARDS 私服，附预编译 Windows 二进制 |
 | [FyClient](/projects/fyclient) | 服务端 / 客户端 | C# | 0 | 2026-08-25 | 纯 C# 虚拟测试客户端，端到端验证登录 / 匹配 / 对局 / 结算 |
-| [Prism](/projects/prism) | UE 工具链 | C# | 1 | 2026-09-12 | UE4/UE5 .pak 工具箱（Windows + Android）：浏览预览、贴图替换、pak 合并、跨平台贴图移植 |
-| [UAssetRegistry](/projects/uassetregistry) | UE 工具链 | C# | 0 | 2026-08-17 | AssetRegistry.bin 解析 / 快速枚举 / 语义级回写库（基于 UAssetAPI） |
-| [AssetRegistryTool](/projects/assetregistrytool) | UE 工具链 | C++ | 0 | 2026-08-17 | UE 5.6 编辑器插件：用工程资产重建 AssetRegistry.bin，含 List / Merge commandlet |
+| [Prism](/projects/prism) | UE 工具链 | C# | 5 | 2026-11-14 | UE4/UE5 .pak 工具箱（Windows + Android）：浏览预览、贴图替换、pak 合并、跨平台贴图移植 |
+| [UAssetRegistry](/projects/uassetregistry) | UE 工具链 | C# | 1 | 2026-08-17 | AssetRegistry.bin 解析 / 快速枚举 / 语义级回写库（基于 UAssetAPI） |
+| [AssetRegistryTool](/projects/assetregistrytool) | UE 工具链 | C++ | 1 | 2026-11-13 | UE 5.6 编辑器插件：用工程资产重建 AssetRegistry.bin，含 List / Merge commandlet |
 | [ULocres](/projects/ulocres) | UE 工具链 | C# | 0 | 2026-09-06 | .locres 本地化读写库：四种格式版本全覆盖，未修改内容逐字节一致 |
 | [KismetDecompiler](/projects/kismetdecompiler) | UE 工具链 | C# | 1 | 2026-09-25 | 蓝图 Kismet 字节码反编译器：AST → C++ 风格伪代码，含反 Dispatch 与 CFG 结构化 |
-| [KismetReactor](/projects/kismetreactor) | UE 工具链 | C# | 0 | 2026-08-25 | WPF 图形化蓝图字节码查看 / 编辑器：跳转可视化与就地修改 |
-| [kards-sim](/projects/kardsim) | UE 工具链 | C# | 0 | 2026-09-26 | 把蓝图 Kismet 直译成 C# 的本地对局模拟器：42.5 万行直译产物，可跑自对弈训练 AI |
+| [KismetReactor](/projects/kismetreactor) | UE 工具链 | C# | 1 | 2026-08-25 | WPF 图形化蓝图字节码查看 / 编辑器：跳转可视化与就地修改 |
+| [kards-sim](/projects/kardsim) | UE 工具链 | C# | 5 | 2026-09-26 | 把蓝图 Kismet 直译成 C# 的本地对局模拟器，可用于训练和评测 AI |
 | [B64XorDecryption](/projects/b64xordecryption) | 逆向 / 协议 | C++ | 0 | 2026-07-20 | Base64 + 变长 XOR 私有协议编解码的逆向实现（C 动态库 / C# API） |
-| [Ruri.ShaderDecompiler](/projects/upstream#ruri-shaderdecompiler)（Fork） | Fork | C# | 0 | 2026-09-12 | 通用 Shader 反编译库：把 Shader 二进制还原为带符号的 HLSL |
-| [iced](/projects/upstream#iced)（Fork） | Fork | Rust | 0 | 2026-09-09 | x86/x64 反汇编 / 汇编 / 编解码库，含 Rust / .NET / Java / Python / Lua 绑定 |
-| [FractalMiner](/projects/upstream#fractalminer)（Fork） | Fork | ShaderLab | 0 | 2026-09-08 | Unity ShaderLab 分形渲染实验 |
-| [VapeV4.21](/projects/upstream#vapev4-21)（Fork） | Fork | Java | 0 | 2026-08-24 | Vape 4.21 Java 层与 Windows x64 原生桥接层的研究性恢复工程 |
-| [OpenVape](/projects/upstream#openvape)（Fork） | Fork | Batchfile | 0 | 2026-08-14 | Vape 4.21 客户端 / 启动器 / 本地服务的研究性恢复工程 |
-| [gerouke-bot](/projects/upstream#gerouke-bot)（Fork） | Fork | TypeScript | 0 | 2026-08-23 | 面向 macOS 的「割肉可 Bot 0.18.0」源码级重建与扩展 |
-| [UEBlueprintGraphViewer](/projects/upstream#ueblueprintgraphviewer)（Fork） | Fork | C# | 0 | 2026-08-20 | 查看 UE4 / UE5 编译后蓝图代码的工具，含资产引用搜索 |
-| [CCB-Team.github.io](/projects/site) | 本站 | JavaScript | 0 | 2026-09-25 | 本站源码：VitePress 构建，GitHub Actions 部署到 Pages |
+| [Ruri.ShaderDecompiler](/projects/upstream#ruri-shaderdecompiler)（Fork） | Fork | — | 0 | 2026-09-12 | 通用 Shader 反编译库：把 Shader 二进制还原为带符号的 HLSL |
+| [iced](/projects/upstream#iced)（Fork） | Fork | — | 0 | 2026-09-09 | x86/x64 反汇编 / 汇编 / 编解码库，含 Rust / .NET / Java / Python / Lua 绑定 |
+| [FractalMiner](/projects/upstream#fractalminer)（Fork） | Fork | — | 0 | 2026-09-08 | Unity ShaderLab 分形渲染实验 |
+| [VapeV4.21](/projects/upstream#vapev4-21)（Fork） | Fork | — | 0 | 2026-08-24 | Vape 4.21 Java 层与 Windows x64 原生桥接层的研究性恢复工程 |
+| [OpenVape](/projects/upstream#openvape)（Fork） | Fork | — | 0 | 2026-08-14 | Vape 4.21 客户端 / 启动器 / 本地服务的研究性恢复工程 |
+| [gerouke-bot](/projects/upstream#gerouke-bot)（Fork） | Fork | — | 0 | 2026-08-23 | 面向 macOS 的「割肉可 Bot 0.18.0」源码级重建与扩展 |
+| [UEBlueprintGraphViewer](/projects/upstream#ueblueprintgraphviewer)（Fork） | Fork | — | 0 | 2026-08-20 | 查看 UE4 / UE5 编译后蓝图代码的工具，含资产引用搜索 |
+| [CCB-Team.github.io](/projects/site) | 本站 | JavaScript | 0 | 2026-11-07 | 本站源码：VitePress 构建，GitHub Actions 部署到 Pages |
+| [AssetRegistryTools-](https://github.com/CCB-TEAM/AssetRegistryTools-)（Fork） | Fork | — | 0 | 2026-08-17 | 支持导入Cooked资产 |
+| [Crown-duel](https://github.com/CCB-TEAM/Crown-duel) | 游戏 | HTML | 0 | 2026-10-11 | 皇冠决斗是一款基于卡兹游戏圈中事件和人物抽象而成的决斗游戏。 |
+| [faction-mobile-so](https://github.com/CCB-TEAM/faction-mobile-so) | 逆向 / 协议 | C++ | 0 | 2026-10-03 | KARDS Android arm64 盟国扩展移植：libUnreal.so 逆向结论 + 地址表 + 重定位扫描工具 + 移植骨架（未在真机验证） |
+| [Flora](https://github.com/CCB-TEAM/Flora) | UE 工具链 | C# | 7 | 2026-11-15 | FModel 定制版本：资产浏览、蓝图图形查看与 pak 打包 |
+| [kards-client-headless](https://github.com/CCB-TEAM/kards-client-headless) | 服务端 / 客户端 | C# | 0 | 2026-10-28 | — |
+| [kmod-docs](https://github.com/CCB-TEAM/kmod-docs) | 模组 / 文档 | CSS | 0 | 2026-11-18 | KMod Windows / Android 安装、开发与 API 文档 |
+| [KMod-Loader-Android](https://github.com/CCB-TEAM/KMod-Loader-Android) | 模组 / 文档 | C++ | 3 | 2026-11-17 | KARDS Android 模组加载器，通过 UE 反射运行 Lua 模组 |
+| [KMod-Loader-Windows](https://github.com/CCB-TEAM/KMod-Loader-Windows) | 模组 / 文档 | C++ | 0 | 2026-11-18 | KARDS Windows 模组加载器，支持 Lua 与 C++ 原生模组 |
+| [polaris](https://github.com/CCB-TEAM/polaris) | UE 工具链 | C# | 0 | 2026-11-14 | 面向 UE 5.6 的 C# SDK 与 Kismet 编译工具 |
+| [Solstice](https://github.com/CCB-TEAM/Solstice) | Web | C# | 0 | 2026-10-11 | Blazor wasm |
+| [solstice-assetregistry](https://github.com/CCB-TEAM/solstice-assetregistry) | UE 工具链 | C# | 0 | 2026-10-24 | AssetRegistry.bin (UE v21) 读取与末尾追加库 |
+| [solstice-bin](https://github.com/CCB-TEAM/solstice-bin) | UE 工具链 | C# | 0 | 2026-10-24 | AssetRegistry.bin (UE v21) 容器层：分段解析与末尾追加 |
+| [solstice-cskismet](https://github.com/CCB-TEAM/solstice-cskismet) | UE 工具链 | C# | 0 | 2026-11-07 | 用 C# 写 Kismet 修改：Roslyn 源码层 → Solstice.Kismet 节点模型 → 蓝图字节码 |
+| [solstice-jmap](https://github.com/CCB-TEAM/solstice-jmap) | UE 工具链 | C# | 0 | 2026-11-07 | 从 jmap 与 AssetRegistry.bin 合成对象表与函数签名表 |
+| [solstice-kismet](https://github.com/CCB-TEAM/solstice-kismet) | UE 工具链 | C# | 0 | 2026-11-07 | 从平铺节点模型生成 UE 蓝图 Kismet 字节码 |
+| [solstice-pak](https://github.com/CCB-TEAM/solstice-pak) | UE 工具链 | C# | 0 | 2026-10-24 | 最小 UE .pak (v3) 读写库，零依赖，可在浏览器内生成 |
+| [Solstice-winter](https://github.com/CCB-TEAM/Solstice-winter) | UE 工具链 | C# | 0 | 2026-11-08 | UE cooked 蓝图工作台：节点图查看与跨资产索引 |
 
 <!-- END:PROJECTS-TABLE -->
 
@@ -90,5 +119,5 @@ CCB-TEAM 的公开工作集中在两条主线：**游戏服务端与协议复刻
 npm run sync     # 读取 CCB-TEAM 公开仓库，重写上表并提示缺少介绍页的仓库
 ```
 
-数据来源是本机已登录的 `gh` CLI（或 `GITHUB_TOKEN` 环境变量）。
-新增项目时，请同时补一个 `docs/projects/<项目>.md` 介绍页，并在 `.vitepress/config.mjs` 的侧边栏中登记。
+数据来源是 GitHub 公开 API；可选设置 `GITHUB_TOKEN` 以提高请求额度。表格是运行同步命令时的快照，不会随仓库变化实时更新。
+没有站内介绍页的项目会直接链接到 GitHub。需要添加介绍页时，可创建 `docs/projects/<项目>.md`，并在 `.vitepress/config.mjs` 的侧边栏中登记。

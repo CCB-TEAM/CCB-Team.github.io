@@ -34,13 +34,17 @@ features:
     link: /projects/kismetdecompiler
     linkText: 了解 KismetDecompiler
   - title: Kismet 直译模拟器
-    details: KardsSim 把 1671 个蓝图资产直译成 45.6 万行 C#，得到不依赖游戏本体的本地对局模拟器，可复现、可训练 AI。
+    details: KardsSim 把蓝图资产直译成 C#，得到不依赖游戏本体的本地对局模拟器，可用于训练和评测 AI。
     link: /kismet-sim/
     linkText: 看设计与心得
   - title: 协议逆向
     details: B64XorDecryption 还原「Base64 + 变长 XOR 密钥」私有协议，附 C 动态库、C# API 与 IDA 伪代码存档。
     link: /projects/b64xordecryption
     linkText: 了解编解码方案
+  - title: KARDS 模组加载器
+    details: KMod 提供 Windows 和 Android 加载器，以及安装、开发与 API 文档。
+    link: /projects/#kards-模组与文档
+    linkText: 浏览 KMod 项目
   - title: UE5 运行时逆向
     details: 整理公开资料里手动定位 GObjects / GNames / GWorld / ProcessEvent 与 AOB 特征码的方法，逐条标注出处。
     link: /ue5-re/
@@ -59,7 +63,8 @@ features:
 
 | 方向 | 内容 |
 |---|---|
-| 项目总览 | [全部公开项目](/projects/) —— 按方向分组的完整清单（含自动同步的仓库状态表） |
+| 项目总览 | [全部公开项目](/projects/) —— 按方向分组的清单与可通过脚本刷新的仓库状态表 |
+| KARDS 模组 | [Windows 加载器](https://github.com/CCB-TEAM/KMod-Loader-Windows) · [Android 加载器](https://github.com/CCB-TEAM/KMod-Loader-Android) · [文档](https://github.com/CCB-TEAM/kmod-docs) |
 | 游戏服务端 | [fyserver](/projects/fyserver) · [kards-server-go](/projects/kards-server-go) · [FyClient](/projects/fyclient) |
 | UE 工具链 | [Prism](/projects/prism) · [UAssetRegistry](/projects/uassetregistry) · [AssetRegistryTool](/projects/assetregistrytool) · [ULocres](/projects/ulocres) · [KismetDecompiler](/projects/kismetdecompiler) · [KismetReactor](/projects/kismetreactor) |
 | 对局模拟器 | [KardsSim](/projects/kardsim) —— 蓝图 Kismet 直译成 C#：[为什么是 AST](/kismet-sim/01-why-ast) · [调用约定](/kismet-sim/02-calling-convention) · [触发点体系](/kismet-sim/03-triggers) · [审计方法论](/kismet-sim/04-audit) · [坑与复盘](/kismet-sim/05-pitfalls) · [推荐 hook 点](/kismet-sim/06-hooks) · [发射器实现特性](/kismet-sim/07-emitter) |

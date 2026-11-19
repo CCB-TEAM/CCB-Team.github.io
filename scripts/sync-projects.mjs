@@ -2,13 +2,12 @@
 /**
  * 同步 CCB-TEAM 的公开仓库清单到 docs/projects/index.md。
  *
- * 数据来源：本机已登录的 `gh` CLI（或环境变量 GITHUB_TOKEN）。
+ * 数据来源：GitHub 公开 REST API；可选设置 GITHUB_TOKEN 提高请求额度。
  * 行为：重写 index.md 中 BEGIN:PROJECTS-TABLE / END:PROJECTS-TABLE 之间的表格，
  *       并提示哪些公开仓库还没有专属介绍页。
  *
  * 用法：npm run sync
  */
-import { execFileSync } from 'node:child_process'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, resolve } from 'node:path'
@@ -54,6 +53,22 @@ const GROUP = {
   KismetDecompiler: 'UE 工具链',
   KismetReactor: 'UE 工具链',
   'kards-sim': 'UE 工具链',
+  Flora: 'UE 工具链',
+  polaris: 'UE 工具链',
+  'Solstice-winter': 'UE 工具链',
+  'solstice-pak': 'UE 工具链',
+  'solstice-assetregistry': 'UE 工具链',
+  'solstice-bin': 'UE 工具链',
+  'solstice-jmap': 'UE 工具链',
+  'solstice-kismet': 'UE 工具链',
+  'solstice-cskismet': 'UE 工具链',
+  'KMod-Loader-Windows': '模组 / 文档',
+  'KMod-Loader-Android': '模组 / 文档',
+  'kmod-docs': '模组 / 文档',
+  'kards-client-headless': '服务端 / 客户端',
+  'faction-mobile-so': '逆向 / 协议',
+  'Crown-duel': '游戏',
+  Solstice: 'Web',
   B64XorDecryption: '逆向 / 协议',
   'CCB-Team.github.io': '本站',
 }
@@ -69,7 +84,13 @@ const SUMMARY = {
   ULocres: '.locres 本地化读写库：四种格式版本全覆盖，未修改内容逐字节一致',
   KismetDecompiler: '蓝图 Kismet 字节码反编译器：AST → C++ 风格伪代码，含反 Dispatch 与 CFG 结构化',
   KismetReactor: 'WPF 图形化蓝图字节码查看 / 编辑器：跳转可视化与就地修改',
-  'kards-sim': '把蓝图 Kismet 直译成 C# 的本地对局模拟器：42.5 万行直译产物，可跑自对弈训练 AI',
+  'kards-sim': '把蓝图 Kismet 直译成 C# 的本地对局模拟器，可用于训练和评测 AI',
+  Flora: 'FModel 定制版本：资产浏览、蓝图图形查看与 pak 打包',
+  polaris: '面向 UE 5.6 的 C# SDK 与 Kismet 编译工具',
+  'Solstice-winter': 'UE cooked 蓝图工作台：节点图查看与跨资产索引',
+  'KMod-Loader-Windows': 'KARDS Windows 模组加载器，支持 Lua 与 C++ 原生模组',
+  'KMod-Loader-Android': 'KARDS Android 模组加载器，通过 UE 反射运行 Lua 模组',
+  'kmod-docs': 'KMod Windows / Android 安装、开发与 API 文档',
   B64XorDecryption: 'Base64 + 变长 XOR 私有协议编解码的逆向实现（C 动态库 / C# API）',
   'Ruri.ShaderDecompiler': '通用 Shader 反编译库：把 Shader 二进制还原为带符号的 HLSL',
   iced: 'x86/x64 反汇编 / 汇编 / 编解码库，含 Rust / .NET / Java / Python / Lua 绑定',
@@ -81,22 +102,70 @@ const SUMMARY = {
   'CCB-Team.github.io': '本站源码：VitePress 构建，GitHub Actions 部署到 Pages',
 }
 
-function ghJson(args) {
-  const out = execFileSync('gh', args, {
-    encoding: 'utf8',
-    maxBuffer: 32 * 1024 * 1024,
-    env: process.env,
-  })
-  return JSON.parse(out)
+async function fetchPublicRepos() {
+  const repos = []
+  const names = new Set()
+  const headers = {
+    Accept: 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28',
+    'User-Agent': 'CCB-Team-site-sync',
+  }
+  if (process.env.GITHUB_TOKEN) headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`
+
+  for (let page = 1; ; page++) {
+    const url = new URL(`https://api.github.com/orgs/${ORG}/repos`)
+    url.search = new URLSearchParams({ type: 'public', per_page: '100', page: String(page) })
+    let response
+    try {
+      response = await fetch(url, { headers, signal: AbortSignal.timeout(30000) })
+    } catch (error) {
+      throw new Error(`获取 GitHub 仓库第 ${page} 页失败：${error.message}`)
+    }
+    if (!response.ok) {
+      const limit = response.headers.get('x-ratelimit-remaining') === '0'
+        ? '（请求额度已用尽，可稍后重试或设置 GITHUB_TOKEN）' : ''
+      throw new Error(`获取 GitHub 仓库第 ${page} 页失败：HTTP ${response.status}${limit}`)
+    }
+    let data
+    try {
+      data = await response.json()
+    } catch {
+      throw new Error(`GitHub 仓库第 ${page} 页不是有效 JSON`)
+    }
+    if (!Array.isArray(data) || data.length > 100) {
+      throw new Error(`GitHub 仓库第 ${page} 页格式不正确`)
+    }
+    for (const r of data) {
+      if (!r || typeof r.name !== 'string' || !/^[A-Za-z0-9_.-]+$/.test(r.name) ||
+          r.private !== false || typeof r.fork !== 'boolean' ||
+          !Number.isSafeInteger(r.stargazers_count) || r.stargazers_count < 0 ||
+          !(r.language === null || typeof r.language === 'string') ||
+          !(r.description === null || typeof r.description === 'string') ||
+          !(r.pushed_at === null || (typeof r.pushed_at === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(r.pushed_at)))) {
+        throw new Error(`GitHub 仓库第 ${page} 页包含无效数据`)
+      }
+      const key = r.name.toLowerCase()
+      if (names.has(key)) throw new Error(`GitHub 仓库数据包含重复名称：${r.name}`)
+      names.add(key)
+      repos.push({
+        name: r.name,
+        description: r.description,
+        primaryLanguage: r.language ? { name: r.language } : null,
+        stargazerCount: r.stargazers_count,
+        isFork: r.fork,
+        url: `https://github.com/${ORG}/${encodeURIComponent(r.name)}`,
+        pushedAt: r.pushed_at,
+      })
+    }
+    if (data.length < 100) return repos
+  }
 }
 
-function fetchPublicRepos() {
-  const fields = 'name,visibility,description,primaryLanguage,stargazerCount,isFork,url,pushedAt'
-  const repos = ghJson(['repo', 'list', ORG, '--limit', '500', '--json', fields])
-  return repos.filter((r) => r.visibility === 'PUBLIC')
-}
-
-const cell = (s) => String(s ?? '').replace(/\|/g, '\\|').replace(/\s*\n\s*/g, ' ').trim()
+// GitHub 元数据是外部输入：防止 HTML、Markdown 和表格分隔符改变页面结构。
+const cell = (s) => String(s ?? '').replace(/[\u0000-\u001f\u007f]+/g, ' ')
+  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  .replace(/[\\`*_[\]]/g, '\\$&').replace(/\|/g, '\\|').trim()
+const own = (object, key) => Object.hasOwn(object, key)
 const day = (iso) => (iso ? String(iso).slice(0, 10) : '—')
 
 function renderTable(repos) {
@@ -107,22 +176,22 @@ function renderTable(repos) {
   }
   const sorted = [...repos].sort((a, b) => rank(a.name) - rank(b.name) || a.name.localeCompare(b.name))
 
-  const unregistered = sorted.filter((r) => !(r.name in PAGE)).map((r) => r.name)
+  const unregistered = sorted.filter((r) => !own(PAGE, r.name)).map((r) => r.name)
 
   const rows = sorted.map((r) => {
-    const link = PAGE[r.name] ? `[${r.name}](${PAGE[r.name]})` : `[${r.name}](${r.url})`
+    const link = `[${cell(r.name)}](${own(PAGE, r.name) ? PAGE[r.name] : r.url})`
     const lang = r.primaryLanguage?.name ?? '—'
     const fork = r.isFork ? '（Fork）' : ''
-    const group = GROUP[r.name] ?? (r.isFork ? 'Fork' : '—')
-    const desc = cell(SUMMARY[r.name] ?? r.description) || '—'
+    const group = own(GROUP, r.name) ? GROUP[r.name] : (r.isFork ? 'Fork' : '—')
+    const desc = cell(own(SUMMARY, r.name) ? SUMMARY[r.name] : r.description) || '—'
     return `| ${link}${fork} | ${cell(group)} | ${cell(lang)} | ${r.stargazerCount} | ${day(r.pushedAt)} | ${desc} |`
   })
 
   return { table: rows.join('\n'), count: sorted.length, unregistered }
 }
 
-function main() {
-  const repos = fetchPublicRepos()
+async function main() {
+  const repos = await fetchPublicRepos()
   const { table, count, unregistered } = renderTable(repos)
 
   const block = [
@@ -152,4 +221,7 @@ function main() {
   }
 }
 
-main()
+main().catch((error) => {
+  console.error(`✗ 同步失败：${error.message}`)
+  process.exitCode = 1
+})
