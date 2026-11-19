@@ -23,6 +23,7 @@ title: Prism —— UE .pak 模组工具箱
 - 文件管理器式浏览 + 关键字搜索，搜索框里直接输入 pak 内路径可跳转导航。
 - 把相关的 `.uasset` / `.uexp` / `.ubulk` 归并为一个资产条目。
 - 预览贴图（带缩略图）、音频（内置播放器）、3D 网格线框、本地化（`.locres`）、蓝图伪代码。
+- 从 cooked 字节码重建只读蓝图节点图；支持视频预览，桌面端可通过 `prism_binka.dll` 解码 BINKA 音频。
 - 导出原始 package、PNG 图片、整个目录，或分享到其它 App。
 
 **贴图替换**
@@ -32,7 +33,12 @@ title: Prism —— UE .pak 模组工具箱
 
 **Pak 合并**
 
-- 多选 pak，长按拖动设置覆盖优先级（列表中**越靠下越优先**），构建前可检查冲突。
+- 多选 pak，拖动设置覆盖优先级（列表中**越靠上越优先**），构建前可检查冲突；可提供基础 `.locres` 逐条合并翻译。
+
+**音视频替换与模组工程**
+
+- 可替换流式 SoundWave 音频及视频文件，按平台条件使用原生编码器或工具。
+- `.prismproj` 保存替换配方，构建时重新提取与编码；AES key 保存在本地设置，不写入工程文件。
 
 **Pak 转换（跨平台贴图移植）**
 
@@ -58,11 +64,11 @@ title: Prism —— UE .pak 模组工具箱
 | 输出模式 | 内容 | 体积 |
 |---|---|---|
 | `ReplacedOnly`（默认） | 仅本次运行改动的资产 | ≈ 变更量 |
+| `MergeSourceFiles` | 变更贴图 + 源包其他文件 | ≈ 变更量 |
 | `FullRepack` | 主 pak 全部文件 + 被替换的贴图 | ≈ 主 pak |
 | `MergeAll` | 替换结果 + 源包独有文件 + 主 pak 其余文件 | ≈ 主 pak |
 
-贴图候选识别优先匹配 `_P.uasset` 命名，但任何带同级 `.uexp` 的 `.uasset` 也会被接受——因此不遵循 `_P` 约定的游戏
-（例如 KARDS 的 `t_xxx.uasset`）同样能正确转换。
+转换会先识别资产类型：贴图重新编码，其他支持携带的资产可按选定输出模式原样复制。
 
 实测性能：7 GB / 35 586 文件的主 pak 读取索引约 0.3 s，默认模式数秒内完成；重编码路径每张贴图约 0.3–1 s。
 
@@ -76,7 +82,8 @@ Prism/
 ├── Prism.Desktop.Desktop/     # Windows 外壳（单文件发布）
 ├── Prism.Desktop.Android/     # Android 外壳（APK，arm64-v8a）
 ├── PakTool.Core/              # pak 会话 / 预览 / 导出 / 合并 / 映射 / locres
-├── UAssetTexture.Core/        # 贴图替换引擎 + pak 转换
+├── UAssetTexture.Core/        # 贴图替换引擎
+├── UAssetTexture.PakConversion/ # pak 转换与会话层
 ├── UAssetCLI/                 # 贴图替换命令行工具
 ├── test/Prism.FeatureTests/   # 集成测试（控制台程序）
 └── UAssetAPI-master/          # vendored UAssetAPI（含本地 patch）
@@ -92,7 +99,7 @@ dotnet build Prism.Desktop.Desktop/Prism.Desktop.Desktop.csproj
 dotnet build Prism.Desktop.Android/Prism.Desktop.Android.csproj \
   -c Release -p:JavaSdkDirectory=<JDK 路径>
 
-# 集成测试（114 条断言）：映射格式识别、搜索框路径解析、pak 转换两条路径、
+# 集成测试：映射格式识别、搜索框路径解析、pak 转换、
 # 合并优先级、locres 与 JSON 往返、非 ASCII pak 路径、无头 UI 加载与导航
 dotnet run --project test/Prism.FeatureTests
 ```

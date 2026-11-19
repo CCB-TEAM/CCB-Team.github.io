@@ -26,7 +26,7 @@ title: B64XorDecryption —— Base64+XOR 协议编解码
 
 解码步骤（`Class1.cs` 的 `DataDecoder.Decode`）：
 
-1. 取前 2 位十进制数字作为 `tableIndex`，前 8 位之后的 6 位十进制数字作为 `dataLength`。
+1. 取前 2 位十进制数字作为 `tableIndex`，紧接着的 6 位十进制数字作为 `dataLength`。
 2. 用 `tableIndex` 查 **75 元素**的 `SALT_LENGTH_TABLE` 得到 `keyLength`。
 3. 从第 8 位起取 4 字符 Base64 作为 **actionId**，随后取 `keyLength` 个 ASCII 字符作为**密钥**，剩余部分为 Base64 密文。
 4. 密文与密钥**按位循环 XOR** 得到明文；actionId 三个字节也用密钥对应字节 XOR 后拼成 24 位整数。
@@ -48,6 +48,10 @@ DataDecoder.setSaltLengthTable(newTable);   // 必须正好 75 个元素，否�
 
 C 侧的导出入口刻意使用了混淆命名（`_xR7qM2vP` 编码、`_kW3nJ9tF` 解码），
 并保留了 `verify_caller()` 调用者校验钩子（当前实现为占位，恒返回 1），方便按需接入宿主校验。
+
+::: warning 实现差异
+仓库当前 `codec.c` 与 `Class1.cs` 的默认盐长表从索引 52 起存在差异。混用 C 编码和 C# 解码前应核对并统一表内容；C# 提供 `setSaltLengthTable` 用于替换表。
+:::
 
 ## 用途
 

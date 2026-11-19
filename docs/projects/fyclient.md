@@ -47,6 +47,8 @@ dotnet run -- decode "编码串"
 | `--server` | `http://127.0.0.1:1145` | 服务器 HTTP 地址 |
 | `--ws` | `9178` | 服务器 WebSocket 端口 |
 
+以上默认值来自 FyClient 仓库 README；当前 fyserver README 使用 HTTP 和 WebSocket 共用 `5231` 端口。实际联调时请核对使用的服务端版本与客户端配置，不要假设两边默认值一致。
+
 ## 双人对局输出示例
 
 ```

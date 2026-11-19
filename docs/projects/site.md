@@ -22,7 +22,7 @@ CCB-Team.github.io/
 ├── docs/
 │   ├── index.md                   # 首页（hero + 方向卡片）
 │   ├── projects/                  # 项目介绍（本目录）
-│   │   ├── index.md               #   总览（含自动同步的仓库清单）
+│   │   ├── index.md               #   总览（含脚本生成的仓库清单）
 │   │   └── *.md                   #   各项目详情页
 │   └── security/                  # 安全 QA 测试记录
 ├── scripts/sync-projects.mjs      # 从 GitHub 同步公开仓库清单
@@ -39,10 +39,10 @@ npm run preview   # 预览构建产物
 npm run sync      # 重新生成「项目总览」里的公开仓库清单
 ```
 
-`npm run sync` 依赖已登录的 [`gh` CLI](https://cli.github.com/)（或环境变量 `GITHUB_TOKEN`），
-读取 `CCB-TEAM` 下的公开仓库，重写 `docs/projects/index.md` 中
+`npm run sync` 使用 GitHub 公开 REST API（可选设置 `GITHUB_TOKEN` 提高请求额度），
+分页读取 `CCB-TEAM` 下的公开仓库，重写 `docs/projects/index.md` 中
 `BEGIN:PROJECTS-TABLE` 与 `END:PROJECTS-TABLE` 之间的表格，并提示**哪些公开仓库还没有专属介绍页**。
-该脚本只在本地运行，不参与 CI 构建。
+部署工作流不会自动运行该脚本；仓库清单是最近一次运行并提交时的快照。
 
 ## 部署
 

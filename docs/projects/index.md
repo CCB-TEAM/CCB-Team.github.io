@@ -17,15 +17,15 @@ CCB-TEAM 的公开工作集中在两条主线：**游戏服务端与协议复刻
 | [fyserver](/projects/fyserver) | C# / .NET 10 写的 KARDS 私服：HTTP + WebSocket 单端口、NativeAOT 单文件发布、自带 Web 后台 |
 | [kards-server-go](/projects/kards-server-go) | 同一协议面的 Go 实现：Gin + GORM + JWT + MySQL，附预编译 Windows 二进制 |
 | [FyClient](/projects/fyclient) | 虚拟测试客户端：纯 C# 复刻协议，一条命令跑通登录 → 匹配 → 对局 → 结算 |
-| [kards-client-headless](https://github.com/CCB-TEAM/kards-client-headless) | 无界面客户端相关项目，具体内容见仓库 |
+| [kards-client-headless](/projects/kards-client-headless) | 不依赖 UE 或 GPU 的小卡池规则与 AI 原型；原版客户端对战尚未验证 |
 
 ### KARDS 模组与文档
 
 | 项目 | 说明 |
 |---|---|
-| [KMod-Loader-Windows](https://github.com/CCB-TEAM/KMod-Loader-Windows) | Windows 模组加载器，支持 Lua 与 C++ 原生模组 |
-| [KMod-Loader-Android](https://github.com/CCB-TEAM/KMod-Loader-Android) | Android 模组加载器，通过 UE 反射运行 Lua 模组；安装需重打包并签名 APK |
-| [kmod-docs](https://github.com/CCB-TEAM/kmod-docs) | KMod 的安装、开发与 API 文档 |
+| [KMod-Loader-Windows](/projects/kmod-loader-windows) | Windows 模组加载器，支持 Lua 与 C++ 原生模组 |
+| [KMod-Loader-Android](/projects/kmod-loader-android) | Android 模组加载器，通过 UE 反射运行 Lua 模组；安装需重打包并签名 APK |
+| [kmod-docs](/projects/kmod-docs) | KMod 的安装、开发与 API 文档 |
 
 ### UE 资产与蓝图工具链
 
@@ -38,24 +38,24 @@ CCB-TEAM 的公开工作集中在两条主线：**游戏服务端与协议复刻
 | [KismetDecompiler](/projects/kismetdecompiler) | 蓝图字节码反编译器：AST → C++ 风格伪代码，CFG 结构化与反 `ExecuteUbergraph` |
 | [KismetReactor](/projects/kismetreactor) | WPF 图形化字节码查看 / 编辑器：树视图、跳转可视化、插入表达式与就地修改 |
 | [KardsSim](/projects/kardsim) | 把蓝图 Kismet **直译成 C#** 的本地对局模拟器，用于训练和评测 AI |
-| [Flora](https://github.com/CCB-TEAM/Flora) | FModel 定制版本：资产浏览、蓝图图形查看与 pak 打包 |
-| [polaris](https://github.com/CCB-TEAM/polaris) | 面向 UE 5.6 的 C# SDK 与 Kismet 编译工具 |
-| [Solstice-winter](https://github.com/CCB-TEAM/Solstice-winter) | UE cooked 蓝图工作台，提供节点图与跨资产索引；节点视图目前只读 |
-| Solstice 工具库 | [pak](https://github.com/CCB-TEAM/solstice-pak) · [AssetRegistry](https://github.com/CCB-TEAM/solstice-assetregistry) · [bin](https://github.com/CCB-TEAM/solstice-bin) · [jmap](https://github.com/CCB-TEAM/solstice-jmap) · [Kismet](https://github.com/CCB-TEAM/solstice-kismet) · [C# Kismet](https://github.com/CCB-TEAM/solstice-cskismet) |
+| [Flora](/projects/flora) | FModel 定制版本：资产浏览、蓝图图形查看与 pak 打包 |
+| [polaris](/projects/polaris) | 面向 UE 5.6 的 C# SDK 与 Kismet 编译工具 |
+| [Solstice-winter](/projects/solstice-winter) | UE cooked 蓝图工作台，提供节点图与跨资产索引；节点视图目前只读 |
+| Solstice 工具库 | [pak](/projects/solstice-pak) · [AssetRegistry](/projects/solstice-assetregistry) · [bin](/projects/solstice-bin) · [jmap](/projects/solstice-jmap) · [Kismet](/projects/solstice-kismet) · [C# Kismet](/projects/solstice-cskismet) |
 
 ### 逆向工程与协议分析
 
 | 项目 | 说明 |
 |---|---|
 | [B64XorDecryption](/projects/b64xordecryption) | 「Base64 + 变长 XOR 密钥」私有协议编解码的逆向成果：C 动态库 + C# API + IDA 伪代码存档 |
-| [faction-mobile-so](https://github.com/CCB-TEAM/faction-mobile-so) | KARDS Android arm64 盟国扩展移植研究与工具，尚未在真机验证 |
+| [faction-mobile-so](/projects/faction-mobile-so) | KARDS Android arm64 盟国扩展移植研究与工具，尚未在真机验证 |
 
 ### 游戏与 Web
 
 | 项目 | 说明 |
 |---|---|
-| [Crown-duel](https://github.com/CCB-TEAM/Crown-duel) | 基于卡兹游戏圈事件和人物的决斗游戏 |
-| [Solstice](https://github.com/CCB-TEAM/Solstice) | Blazor WebAssembly 项目 |
+| [Crown-duel](/projects/crown-duel) | 基于卡兹游戏圈事件和人物的决斗游戏 |
+| [Solstice](/projects/solstice) | UE cooked 资产与 Kismet 字节码工具的概念和早期规划 |
 
 ### 相关记录
 
@@ -89,24 +89,24 @@ CCB-TEAM 的公开工作集中在两条主线：**游戏服务端与协议复刻
 | [OpenVape](/projects/upstream#openvape)（Fork） | Fork | — | 0 | 2026-08-14 | Vape 4.21 客户端 / 启动器 / 本地服务的研究性恢复工程 |
 | [gerouke-bot](/projects/upstream#gerouke-bot)（Fork） | Fork | — | 0 | 2026-08-23 | 面向 macOS 的「割肉可 Bot 0.18.0」源码级重建与扩展 |
 | [UEBlueprintGraphViewer](/projects/upstream#ueblueprintgraphviewer)（Fork） | Fork | — | 0 | 2026-08-20 | 查看 UE4 / UE5 编译后蓝图代码的工具，含资产引用搜索 |
-| [CCB-Team.github.io](/projects/site) | 本站 | JavaScript | 0 | 2026-11-07 | 本站源码：VitePress 构建，GitHub Actions 部署到 Pages |
-| [AssetRegistryTools-](https://github.com/CCB-TEAM/AssetRegistryTools-)（Fork） | Fork | — | 0 | 2026-08-17 | 支持导入Cooked资产 |
-| [Crown-duel](https://github.com/CCB-TEAM/Crown-duel) | 游戏 | HTML | 0 | 2026-10-11 | 皇冠决斗是一款基于卡兹游戏圈中事件和人物抽象而成的决斗游戏。 |
-| [faction-mobile-so](https://github.com/CCB-TEAM/faction-mobile-so) | 逆向 / 协议 | C++ | 0 | 2026-10-03 | KARDS Android arm64 盟国扩展移植：libUnreal.so 逆向结论 + 地址表 + 重定位扫描工具 + 移植骨架（未在真机验证） |
-| [Flora](https://github.com/CCB-TEAM/Flora) | UE 工具链 | C# | 7 | 2026-11-15 | FModel 定制版本：资产浏览、蓝图图形查看与 pak 打包 |
-| [kards-client-headless](https://github.com/CCB-TEAM/kards-client-headless) | 服务端 / 客户端 | C# | 0 | 2026-10-28 | — |
-| [kmod-docs](https://github.com/CCB-TEAM/kmod-docs) | 模组 / 文档 | CSS | 0 | 2026-11-18 | KMod Windows / Android 安装、开发与 API 文档 |
-| [KMod-Loader-Android](https://github.com/CCB-TEAM/KMod-Loader-Android) | 模组 / 文档 | C++ | 3 | 2026-11-17 | KARDS Android 模组加载器，通过 UE 反射运行 Lua 模组 |
-| [KMod-Loader-Windows](https://github.com/CCB-TEAM/KMod-Loader-Windows) | 模组 / 文档 | C++ | 0 | 2026-11-18 | KARDS Windows 模组加载器，支持 Lua 与 C++ 原生模组 |
-| [polaris](https://github.com/CCB-TEAM/polaris) | UE 工具链 | C# | 0 | 2026-11-14 | 面向 UE 5.6 的 C# SDK 与 Kismet 编译工具 |
-| [Solstice](https://github.com/CCB-TEAM/Solstice) | Web | C# | 0 | 2026-10-11 | Blazor wasm |
-| [solstice-assetregistry](https://github.com/CCB-TEAM/solstice-assetregistry) | UE 工具链 | C# | 0 | 2026-10-24 | AssetRegistry.bin (UE v21) 读取与末尾追加库 |
-| [solstice-bin](https://github.com/CCB-TEAM/solstice-bin) | UE 工具链 | C# | 0 | 2026-10-24 | AssetRegistry.bin (UE v21) 容器层：分段解析与末尾追加 |
-| [solstice-cskismet](https://github.com/CCB-TEAM/solstice-cskismet) | UE 工具链 | C# | 0 | 2026-11-07 | 用 C# 写 Kismet 修改：Roslyn 源码层 → Solstice.Kismet 节点模型 → 蓝图字节码 |
-| [solstice-jmap](https://github.com/CCB-TEAM/solstice-jmap) | UE 工具链 | C# | 0 | 2026-11-07 | 从 jmap 与 AssetRegistry.bin 合成对象表与函数签名表 |
-| [solstice-kismet](https://github.com/CCB-TEAM/solstice-kismet) | UE 工具链 | C# | 0 | 2026-11-07 | 从平铺节点模型生成 UE 蓝图 Kismet 字节码 |
-| [solstice-pak](https://github.com/CCB-TEAM/solstice-pak) | UE 工具链 | C# | 0 | 2026-10-24 | 最小 UE .pak (v3) 读写库，零依赖，可在浏览器内生成 |
-| [Solstice-winter](https://github.com/CCB-TEAM/Solstice-winter) | UE 工具链 | C# | 0 | 2026-11-08 | UE cooked 蓝图工作台：节点图查看与跨资产索引 |
+| [CCB-Team.github.io](/projects/site) | 本站 | JavaScript | 0 | 2026-11-19 | 本站源码：VitePress 构建，GitHub Actions 部署到 Pages |
+| [kards-client-headless](/projects/kards-client-headless) | 服务端 / 客户端 | C# | 0 | 2026-10-28 | 无需运行 UE 或 GPU 的小卡池规则与 AI 原型；原版客户端对战尚未验证 |
+| [faction-mobile-so](/projects/faction-mobile-so) | 逆向 / 协议 | C++ | 0 | 2026-10-03 | KARDS Android arm64 盟国扩展移植：libUnreal.so 逆向结论 + 地址表 + 重定位扫描工具 + 移植骨架（未在真机验证） |
+| [Crown-duel](/projects/crown-duel) | 游戏 | HTML | 0 | 2026-10-11 | 皇冠决斗是一款基于卡兹游戏圈中事件和人物抽象而成的决斗游戏。 |
+| [Solstice](/projects/solstice) | Web | C# | 0 | 2026-10-11 | UE cooked 资产与 Kismet 字节码工具的概念与早期规划 |
+| [Flora](/projects/flora) | UE 工具链 | C# | 7 | 2026-11-15 | FModel 定制版本：资产浏览、蓝图图形查看与 pak 打包 |
+| [solstice-pak](/projects/solstice-pak) | UE 工具链 | C# | 0 | 2026-10-24 | 最小 UE .pak (v3) 读写库，零依赖，可在浏览器内生成 |
+| [solstice-assetregistry](/projects/solstice-assetregistry) | UE 工具链 | C# | 0 | 2026-10-24 | AssetRegistry.bin (UE v21) 读取与末尾追加库 |
+| [solstice-jmap](/projects/solstice-jmap) | UE 工具链 | C# | 0 | 2026-11-07 | 从 jmap 与 AssetRegistry.bin 合成对象表与函数签名表 |
+| [solstice-bin](/projects/solstice-bin) | UE 工具链 | C# | 0 | 2026-10-24 | AssetRegistry.bin (UE v21) 容器层：分段解析与末尾追加 |
+| [solstice-kismet](/projects/solstice-kismet) | UE 工具链 | C# | 0 | 2026-11-07 | 从平铺节点模型生成 UE 蓝图 Kismet 字节码 |
+| [solstice-cskismet](/projects/solstice-cskismet) | UE 工具链 | C# | 0 | 2026-11-07 | 用 C# 写 Kismet 修改：Roslyn 源码层 → Solstice.Kismet 节点模型 → 蓝图字节码 |
+| [Solstice-winter](/projects/solstice-winter) | UE 工具链 | C# | 0 | 2026-11-08 | UE cooked 蓝图工作台：节点图查看与跨资产索引 |
+| [AssetRegistryTools-](/projects/assetregistrytools-)（Fork） | Fork | — | 0 | 2026-08-17 | 支持导入Cooked资产 |
+| [polaris](/projects/polaris) | UE 工具链 | C# | 0 | 2026-11-14 | 面向 UE 5.6 的 C# SDK 与 Kismet 编译工具 |
+| [KMod-Loader-Android](/projects/kmod-loader-android) | 模组 / 文档 | C++ | 3 | 2026-11-17 | KARDS Android 模组加载器，通过 UE 反射运行 Lua 模组 |
+| [kmod-docs](/projects/kmod-docs) | 模组 / 文档 | CSS | 0 | 2026-11-18 | KMod Windows / Android 安装、开发与 API 文档 |
+| [KMod-Loader-Windows](/projects/kmod-loader-windows) | 模组 / 文档 | C++ | 0 | 2026-11-18 | KARDS Windows 模组加载器，支持 Lua 与 C++ 原生模组 |
 
 <!-- END:PROJECTS-TABLE -->
 
@@ -114,7 +114,7 @@ CCB-TEAM 的公开工作集中在两条主线：**游戏服务端与协议复刻
 
 标注「（Fork）」的仓库系在上游基础上 Fork，**主要贡献与著作权属于上游作者**，
 团队在其上做过本地修改、扩展或研究性留存。项目介绍见 [上游衍生项目](/projects/upstream)，
-另有 [AssetRegistryTools-](https://github.com/CCB-TEAM/AssetRegistryTools-)（支持导入 cooked 资产）。
+另有 [AssetRegistryTools-](/projects/assetregistrytools-)（支持导入 cooked 资产）。
 
 ## 私有仓库
 

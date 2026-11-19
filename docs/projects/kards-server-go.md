@@ -12,7 +12,7 @@ title: kards-server-go —— Gin 重写的 KARDS 私服
 | 语言 | Go（Gin · GORM · JWT · WebSocket · MySQL） |
 | 仓库 | <https://github.com/CCB-TEAM/kards-server-go> |
 | 发布产物 | `release/kards-server-go-windows-amd64-*.exe`（附 `.sha256` 校验） |
-| 状态 | 功能可用；提交节奏较慢（最近一次推送 2026-05） |
+| 状态 | 项目状态及最近推送请查看仓库 |
 
 ## 布局
 
@@ -46,8 +46,8 @@ kards-server-go/
 | | fyserver | kards-server-go |
 |---|---|---|
 | 语言 / 栈 | C# · .NET 10 · Minimal API | Go · Gin |
-| 存储 | FASTER KV（文件） | MySQL（GORM） |
-| 分发 | NativeAOT 单文件约 20 MB | Windows amd64 可执行文件 |
+| 存储 | FASTER、MySQL 或 PostgreSQL | MySQL（GORM） |
+| 分发 | NativeAOT 原生可执行文件及配套资源 | Windows amd64 可执行文件 |
 | 定位 | 协议面覆盖最全、后台完善 | 轻量、Go 生态、便于二次开发 |
 
 ## 说明

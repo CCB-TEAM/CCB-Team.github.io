@@ -17,7 +17,7 @@ title: KismetDecompiler —— UE5 蓝图字节码反编译
 ## 特性
 
 - **表达式渲染**：`ExprRenderer` —— AST → 伪代码字符串（变量路径 / 函数名 / 常量 / 类型）
-- **控制流结构化**：CFG 切块 + if/else/汇合反转还原，**17/19 函数零 goto**
+- **控制流结构化**：CFG 切块与支配关系分析，还原 if、循环与 switch 等结构
 - **反 Dispatch**：识别 `ExecuteUbergraph`（`ComputedJump(EntryPoint)` 起手，EntryPoint == 字节偏移），还原为 `switch (EntryPoint)`，case 标注来源事件函数
 - **Dispatch 内联**（实验）：把 case 体内联回各事件函数，跳转段栈式追踪
 - **语义优化**（实验）：临时量值流内联（含跨纯赋值行传播）、`CallFunc_` 命名简化、常量折叠
@@ -26,24 +26,28 @@ title: KismetDecompiler —— UE5 蓝图字节码反编译
 ## 用法
 
 ```
-用法: KismetDecompiler --uasset <蓝图.uasset> --usmap <mapping.usmap> [--inline] [--opt] [--out <dir>]
+用法: KismetDecompiler --input <蓝图.uasset | 目录> [--usmap <mapping.usmap>] [--out <dir>]
+                       [--opt] [--inline] [--jobs N] [--uhtdump <目录>]
 
-  --uasset  目标 .uasset 蓝图文件
+  --input   目标 .uasset 文件，或递归处理目录；--uasset 为兼容别名
   --usmap   UE5 unversioned properties 映射文件（.usmap）
   --out     输出目录（默认 ./Decompiled）
   --inline  dispatch case 体内联回事件函数（实验）
   --opt     语义优化：临时量值流内联 / 常量折叠 / 命名简化（实验）
+  --jobs    目录模式下的并行度
+  --uhtdump UHT 头文件导出目录，用于还原形参信息
+  --disasm  显示反汇编视图；--flowdebug / --cfg 用于执行流与 CFG 调试
 ```
 
 ```bash
 # 默认：结构化反编译 + ExecuteUbergraph 反 Dispatch
-KismetDecompiler --uasset BP_Card.uasset --usmap mappings.usmap
+KismetDecompiler --input BP_Card.uasset --usmap mappings.usmap
 
 # 开启全部实验特性
-KismetDecompiler --uasset BP_Card.uasset --usmap mappings.usmap --inline --opt
+KismetDecompiler --input BP_Card.uasset --usmap mappings.usmap --inline --opt
 ```
 
-产物输出到 `Decompiled\`：每函数一个 `*.txt` 加一份 `_all.txt`；开启 `--inline` 时事件内联版在 `Decompiled\Inline\`。
+产物默认输出到 `Decompiled/`：每个资产一个 `.cpp` 文件，包含函数索引和函数体；可用 `--ext` 修改扩展名。
 
 ## 结构
 
@@ -68,7 +72,7 @@ KismetDecompiler/
 ## 已知限制
 
 - Dispatch case 内个别跨段 goto 以 label/goto 形式保真保留，不强制结构化。
-- 行级优化仅处理“赋值一次 + 相邻使用”的临时量，引用形参模式暂不内联。
+- 优化会处理符合条件的临时量和控制流；涉及引用形参或不能证明等价的情形可能保留原样。
 - 实验性功能可能随输入变化出现边界情况。
 
 ## 相关项目

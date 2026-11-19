@@ -15,7 +15,7 @@ title: KardsSim —— 把 KARDS 蓝图直译成 C# 的本地对局模拟器
 |---|---|
 | 语言 / 运行时 | C# · .NET 10 |
 | 依赖 | UAssetAPI 1.1.0（Kismet AST）+ KismetDecompiler（控制流边界修正） |
-| 直译产物 | 1671 个资产 · 6434 个函数 · 45.6 万行 · 21 MB |
+| 直译产物 | 已提交到仓库；README 的总览和历史审计数字不同，具体规模以实际版本为准 |
 | 宿主原语 | 172 个条目（见 [06 · 推荐 hook 点](/kismet-sim/06-hooks)） |
 | 仓库 | <https://github.com/CCB-TEAM/kards-sim> |
 
@@ -43,7 +43,7 @@ C#:       if (!cond) goto L_1234;   body;   L_1234: next;
 |---|---|
 | `KismetDecompiler` | 修正反编译器的控制流边界（`EX_ComputedJump` 作为块切分点与 halting 边） |
 | `KardsTranspiler` | Kismet AST → C#，一个函数一个静态方法，一条语句一个 label |
-| `Generated/` | 1671 个资产的直译产物（已入库，克隆即可编译，**不需要游戏资产**） |
+| `Generated/` | 已入库的资产直译产物（克隆即可编译，**不需要游戏资产**） |
 | `Kismet/` | 运行时：`IHost` 接口 + 值模型 + 通用库函数（Array/Map/String/Math） |
 | `Bridge/` | **hook 缝**：把直译产物接到对局引擎（分派顺序与推荐切点见 [06](/kismet-sim/06-hooks)） |
 | `Engine/` | 对局规则、动作合法性、回合流程、触发点时机 |
@@ -74,10 +74,10 @@ dotnet run --project KardsSim -c Release -- --mode decks
 dotnet run --project KardsSim -c Release -- --mode serve
 ```
 
-## 九个审计模式
+## 审计模式
 
 跑多少局自对弈都不能证明"完备"—— 随机对局抽不到那些卡，等于没测。
-所以除了对局，另做了九个专门查完备性的模式：
+所以除了对局，还提供了专门查完备性的模式：
 
 | 模式 | 查什么 |
 |---|---|
@@ -95,7 +95,9 @@ dotnet run --project KardsSim -c Release -- --mode serve
 这些会给出**互相矛盾**的结论，而矛盾本身才是有用的 ——
 详见专题 [审计方法论](/kismet-sim/04-audit)。
 
-## 当前状态
+## 历史审计记录
+
+以下数据是仓库 README 所记载的一次审计结果，并非实时测试结果。README 的总览另写有 1670 个资产、约 37 万行；不同统计口径或版本尚未核实。
 
 | 指标 | 值 |
 |---|---|

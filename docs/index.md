@@ -64,7 +64,7 @@ features:
 | 方向 | 内容 |
 |---|---|
 | 项目总览 | [全部公开项目](/projects/) —— 按方向分组的清单与可通过脚本刷新的仓库状态表 |
-| KARDS 模组 | [Windows 加载器](https://github.com/CCB-TEAM/KMod-Loader-Windows) · [Android 加载器](https://github.com/CCB-TEAM/KMod-Loader-Android) · [文档](https://github.com/CCB-TEAM/kmod-docs) |
+| KARDS 模组 | [Windows 加载器](/projects/kmod-loader-windows) · [Android 加载器](/projects/kmod-loader-android) · [文档](/projects/kmod-docs) |
 | 游戏服务端 | [fyserver](/projects/fyserver) · [kards-server-go](/projects/kards-server-go) · [FyClient](/projects/fyclient) |
 | UE 工具链 | [Prism](/projects/prism) · [UAssetRegistry](/projects/uassetregistry) · [AssetRegistryTool](/projects/assetregistrytool) · [ULocres](/projects/ulocres) · [KismetDecompiler](/projects/kismetdecompiler) · [KismetReactor](/projects/kismetreactor) |
 | 对局模拟器 | [KardsSim](/projects/kardsim) —— 蓝图 Kismet 直译成 C#：[为什么是 AST](/kismet-sim/01-why-ast) · [调用约定](/kismet-sim/02-calling-convention) · [触发点体系](/kismet-sim/03-triggers) · [审计方法论](/kismet-sim/04-audit) · [坑与复盘](/kismet-sim/05-pitfalls) · [推荐 hook 点](/kismet-sim/06-hooks) · [发射器实现特性](/kismet-sim/07-emitter) |

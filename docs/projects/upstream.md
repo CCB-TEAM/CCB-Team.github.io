@@ -16,6 +16,7 @@ CCB-TEAM 下有一批**在上游仓库基础上 Fork** 的项目：团队在这�
 | [OpenVape](#openvape) | OpenVapeCN/OpenVape | Batchfile | 恢复工程 |
 | [gerouke-bot](#gerouke-bot) | xianyu110/grok-bot-0.18-reconstructed | TypeScript | Bot 重建 |
 | [UEBlueprintGraphViewer](#ueblueprintgraphviewer) | glgen/UEBlueprintGraphViewer | C# | 蓝图查看器 |
+| [AssetRegistryTools-](#assetregistrytools) | killmyworld/AssetRegistryTool | C++ | 资产注册表工具 |
 
 ::: tip 关于 Fork
 Fork 仓库的提交历史包含上游全部提交，因此仓库页面上显示的「最近推送」可能早于团队实际改动的时间。
@@ -97,3 +98,7 @@ Fork 仓库的提交历史包含上游全部提交，因此仓库页面上显示
 本工具偏「浏览与调试」，自研工具偏「结构化文本输出」与「字节码编辑」。
 
 仓库：<https://github.com/CCB-TEAM/UEBlueprintGraphViewer>
+
+## AssetRegistryTools-
+
+支持导入 cooked 资产的资产注册表工具 Fork。仓库：[CCB-TEAM/AssetRegistryTools-](https://github.com/CCB-TEAM/AssetRegistryTools-)；GitHub 标记的直接上游为 [killmyworld/AssetRegistryTool](https://github.com/killmyworld/AssetRegistryTool)。具体使用方式与许可请查看仓库文件。
