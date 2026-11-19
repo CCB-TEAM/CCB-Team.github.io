@@ -41,6 +41,15 @@ export default defineConfig({
             { text: 'fyserver', link: '/projects/fyserver' },
             { text: 'kards-server-go', link: '/projects/kards-server-go' },
             { text: 'FyClient', link: '/projects/fyclient' },
+            { text: 'kards-client-headless（GitHub）', link: 'https://github.com/CCB-TEAM/kards-client-headless' },
+          ],
+        },
+        {
+          text: 'KARDS 模组与文档',
+          items: [
+            { text: 'KMod-Loader-Windows（GitHub）', link: 'https://github.com/CCB-TEAM/KMod-Loader-Windows' },
+            { text: 'KMod-Loader-Android（GitHub）', link: 'https://github.com/CCB-TEAM/KMod-Loader-Android' },
+            { text: 'kmod-docs（GitHub）', link: 'https://github.com/CCB-TEAM/kmod-docs' },
           ],
         },
         {
@@ -53,16 +62,53 @@ export default defineConfig({
             { text: 'KismetDecompiler', link: '/projects/kismetdecompiler' },
             { text: 'KismetReactor', link: '/projects/kismetreactor' },
             { text: 'KardsSim（直译模拟器）', link: '/projects/kardsim' },
+            { text: 'Flora（GitHub）', link: 'https://github.com/CCB-TEAM/Flora' },
+            { text: 'polaris（GitHub）', link: 'https://github.com/CCB-TEAM/polaris' },
+            { text: 'Solstice-winter（GitHub）', link: 'https://github.com/CCB-TEAM/Solstice-winter' },
+          ],
+        },
+        {
+          text: 'Solstice 工具库',
+          items: [
+            { text: 'solstice-pak（GitHub）', link: 'https://github.com/CCB-TEAM/solstice-pak' },
+            { text: 'solstice-assetregistry（GitHub）', link: 'https://github.com/CCB-TEAM/solstice-assetregistry' },
+            { text: 'solstice-bin（GitHub）', link: 'https://github.com/CCB-TEAM/solstice-bin' },
+            { text: 'solstice-jmap（GitHub）', link: 'https://github.com/CCB-TEAM/solstice-jmap' },
+            { text: 'solstice-kismet（GitHub）', link: 'https://github.com/CCB-TEAM/solstice-kismet' },
+            { text: 'solstice-cskismet（GitHub）', link: 'https://github.com/CCB-TEAM/solstice-cskismet' },
           ],
         },
         {
           text: '逆向工程与协议分析',
-          items: [{ text: 'B64XorDecryption', link: '/projects/b64xordecryption' }],
+          items: [
+            { text: 'B64XorDecryption', link: '/projects/b64xordecryption' },
+            { text: 'faction-mobile-so（GitHub）', link: 'https://github.com/CCB-TEAM/faction-mobile-so' },
+          ],
         },
         {
-          text: '其它',
+          text: '游戏与 Web',
           items: [
-            { text: '上游衍生项目（Fork）', link: '/projects/upstream' },
+            { text: 'Crown-duel（GitHub）', link: 'https://github.com/CCB-TEAM/Crown-duel' },
+            { text: 'Solstice（GitHub）', link: 'https://github.com/CCB-TEAM/Solstice' },
+          ],
+        },
+        {
+          text: 'Fork 与上游项目',
+          items: [
+            { text: '上游衍生项目总览', link: '/projects/upstream' },
+            { text: 'AssetRegistryTools-（GitHub）', link: 'https://github.com/CCB-TEAM/AssetRegistryTools-' },
+            { text: 'Ruri.ShaderDecompiler', link: '/projects/upstream#ruri-shaderdecompiler' },
+            { text: 'iced', link: '/projects/upstream#iced' },
+            { text: 'FractalMiner', link: '/projects/upstream#fractalminer' },
+            { text: 'VapeV4.21', link: '/projects/upstream#vapev4-21' },
+            { text: 'OpenVape', link: '/projects/upstream#openvape' },
+            { text: 'gerouke-bot', link: '/projects/upstream#gerouke-bot' },
+            { text: 'UEBlueprintGraphViewer', link: '/projects/upstream#ueblueprintgraphviewer' },
+          ],
+        },
+        {
+          text: '本站',
+          items: [
             { text: '本站（CCB-Team.github.io）', link: '/projects/site' },
           ],
         },

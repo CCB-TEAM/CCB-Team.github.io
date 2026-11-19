@@ -17,6 +17,7 @@ CCB-TEAM 的公开工作集中在两条主线：**游戏服务端与协议复刻
 | [fyserver](/projects/fyserver) | C# / .NET 10 写的 KARDS 私服：HTTP + WebSocket 单端口、NativeAOT 单文件发布、自带 Web 后台 |
 | [kards-server-go](/projects/kards-server-go) | 同一协议面的 Go 实现：Gin + GORM + JWT + MySQL，附预编译 Windows 二进制 |
 | [FyClient](/projects/fyclient) | 虚拟测试客户端：纯 C# 复刻协议，一条命令跑通登录 → 匹配 → 对局 → 结算 |
+| [kards-client-headless](https://github.com/CCB-TEAM/kards-client-headless) | 无界面客户端相关项目，具体内容见仓库 |
 
 ### KARDS 模组与文档
 
@@ -47,6 +48,14 @@ CCB-TEAM 的公开工作集中在两条主线：**游戏服务端与协议复刻
 | 项目 | 说明 |
 |---|---|
 | [B64XorDecryption](/projects/b64xordecryption) | 「Base64 + 变长 XOR 密钥」私有协议编解码的逆向成果：C 动态库 + C# API + IDA 伪代码存档 |
+| [faction-mobile-so](https://github.com/CCB-TEAM/faction-mobile-so) | KARDS Android arm64 盟国扩展移植研究与工具，尚未在真机验证 |
+
+### 游戏与 Web
+
+| 项目 | 说明 |
+|---|---|
+| [Crown-duel](https://github.com/CCB-TEAM/Crown-duel) | 基于卡兹游戏圈事件和人物的决斗游戏 |
+| [Solstice](https://github.com/CCB-TEAM/Solstice) | Blazor WebAssembly 项目 |
 
 ### 相关记录
 
@@ -104,7 +113,8 @@ CCB-TEAM 的公开工作集中在两条主线：**游戏服务端与协议复刻
 ## Fork 与上游项目
 
 标注「（Fork）」的仓库系在上游基础上 Fork，**主要贡献与著作权属于上游作者**，
-团队在其上做过本地修改、扩展或研究性留存。逐项说明见 [上游衍生项目](/projects/upstream)。
+团队在其上做过本地修改、扩展或研究性留存。项目介绍见 [上游衍生项目](/projects/upstream)，
+另有 [AssetRegistryTools-](https://github.com/CCB-TEAM/AssetRegistryTools-)（支持导入 cooked 资产）。
 
 ## 私有仓库
 
