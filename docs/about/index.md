@@ -4,19 +4,19 @@ title: 团队介绍
 
 # 关于 CCB-TEAM
 
-CCB-TEAM 是一个小规模的技术小组，做两件事：**把 Kards（1939 Games）的客户端—服务端协议摸清楚并重写服务端**，以及**给 Unreal Engine 的资产与蓝图做一套能用的工具链**。
+CCB-TEAM 是一个小规模的技术小组，围绕 **KARDS 客户端与服务端协议**、**Unreal Engine 资产与蓝图工具**，以及 **KARDS 模组加载与开发**开展研究和开发。
 
-这两件事在我们的仓库里是连着的：为了搞懂协议要读蓝图和 UHT，于是有了反编译与资产工具；工具好用了，协议研究又能走得更深。
+这些方向在仓库中相互关联：协议研究需要理解蓝图和 UHT，资产与反编译工具也为进一步研究提供支持。
 
 ## 我们在做什么
 
 ### 一、游戏服务端与协议逆向
 
-从抓包、蓝图反编译、UHT 头文件三路取证，把整套 HTTP + WebSocket 协议还原出来，并给出两个可运行的实现：
+结合抓包、蓝图反编译和 UHT 头文件研究 HTTP 与 WebSocket 协议，并提供两个服务端实现：
 
 | 项目 | 语言 | 说明 |
 |---|---|---|
-| [`fyserver`](/projects/fyserver) | C# / ASP.NET Core | 单端口 HTTP + WS，codec、对局调度与结算完整 |
+| [`fyserver`](/projects/fyserver) | C# / ASP.NET Core | 单端口 HTTP + WebSocket，提供协议编解码、对局调度和结算等功能 |
 | [`kards-server-go`](/projects/kards-server-go) | Go / Gin | JWT 鉴权、卡组码、对局状态机与独立 WS 端口 |
 | [`B64XorDecryption`](/projects/b64xordecryption) | C / C# | 对局消息 codec 的独立逆向成果（含 IDA 伪代码存档） |
 
@@ -33,12 +33,21 @@ CCB-TEAM 是一个小规模的技术小组，做两件事：**把 Kards（1939 G
 | [`UAssetRegistry`](/projects/uassetregistry) | C# | 资产注册表读写 |
 | [`AssetRegistryTool`](/projects/assetregistrytool) | C++ | UE5.6 资产注册表修改插件 |
 | [`ULocres`](/projects/ulocres) | C# | 本地化资源（.locres）处理 |
+| [`Flora`](/projects/flora) | C# | FModel 定制版本，提供资产浏览和蓝图图形查看 |
+| [`polaris`](/projects/polaris) | C# | 面向 UE 5.6 的 SDK 生成与 Kismet 编译工具 |
+| [`Solstice-winter`](/projects/solstice-winter) | C# | cooked 蓝图工作台，提供只读节点图与跨资产索引 |
+
+更多资产与字节码工具，包括 Solstice 系列，见[项目总览](/projects/)。
 
 ### 三、客户端与运行环境
 
 | 项目 | 语言 | 说明 |
 |---|---|---|
 | [`FyClient`](/projects/fyclient) | C# | 配合服务端研究的客户端工具 |
+| [`kards-client-headless`](/projects/kards-client-headless) | Rust / C# | 无 UE 或 GPU 的小卡池规则与 AI 原型，原版客户端对战尚未验证 |
+| [`KMod-Loader-Windows`](/projects/kmod-loader-windows) | C++ / Lua | KARDS Windows 模组加载器 |
+| [`KMod-Loader-Android`](/projects/kmod-loader-android) | C++ / Lua | KARDS Android 模组加载器 |
+| [`kmod-docs`](/projects/kmod-docs) | 文档 | KMod 安装、开发与 API 文档 |
 
 ### 四、文档与测试
 
@@ -51,7 +60,7 @@ CCB-TEAM 是一个小规模的技术小组，做两件事：**把 Kards（1939 G
 
 ## 成员与分工
 
-团队共 9 位成员。下表列出在**公开仓库**中有可见工作记录的成员及其方向（其余成员的工作集中在内部分支与私有仓库，按隐私优先原则不在此列举账号）。
+下表列出团队此前整理的部分成员及其工作方向，不代表完整或实时的成员名单。公开仓库之外的工作不在此详列。
 
 | 成员 | 主要方向 | 公开仓库中的工作 |
 |---|---|---|
@@ -62,12 +71,12 @@ CCB-TEAM 是一个小规模的技术小组，做两件事：**把 Kards（1939 G
 | [moshuidefenshi](https://github.com/moshuidefenshi) | 逆向与工具验证 | 参与内部逆向与验证工作（相关仓库未公开） |
 
 ::: tip 关于分工的说明
-上表依据各公开仓库的提交记录整理，**不代表全部工作量**——协议逆向过程中的大量验证、抓包与文档工作往往不留提交痕迹。此外，各仓库也合并过非组织成员的贡献，详见各仓库的 Contributors 页面。
+上表结合公开仓库的提交记录与团队此前整理的分工，**不代表全部工作量**——协议逆向过程中的大量验证、抓包与文档工作往往不留提交痕迹。此外，各仓库也合并过非组织成员的贡献，详见各仓库的 Contributors 页面。
 :::
 
 ## 工作原则
 
-- **研究导向、非盈利。** 公开仓库均为协议研究与工具实现，不涉及游戏本体的分发；使用时请遵循各仓库声明的许可。
+- **研究导向、非盈利。** 项目以研究和工具开发为主；使用代码与资料时请遵循各仓库声明的许可及相关第三方权利。
 - **尊重上游。** fork 自上游的项目保留原始许可与来源标注，我们的改动以适配与修复为目的。
 - **证据优先。** 结论尽量给出出处：能实测就实测，不能实测就明确标注为推断（这一原则贯穿[私服教程](/private-server/)与[安全 QA](/security/)的全部内容）。
 - **隐私优先。** 成员账号仅在本人有公开工作可见时列出，不以团队名义公开个人身份信息。
@@ -80,8 +89,8 @@ CCB-TEAM 是一个小规模的技术小组，做两件事：**把 Kards（1939 G
 
 ## 数据说明
 
-本页统计截至 **2026-09-25**：组织共有 **18 个公开仓库**（11 个自建 + 7 个上游 fork），另有若干个私有仓库（仅用于内部研究与验证，不在此列举）。
+公开仓库与项目分类请查看[项目总览](/projects/)；其中的仓库清单由脚本从 GitHub 获取，是最近一次同步时的快照。组织的私有仓库不在本站列举。
 
 ::: warning 免责
-本站与 CCB-TEAM 的所有公开内容均与 1939 Games 及任何游戏发行商无关，不是官方文档或官方实现。相关内容仅供协议研究与学习，请勿用于商业用途或任何侵权场景。
+本站与 CCB-TEAM 的项目均非 1939 Games 或其他游戏发行商的官方文档或官方实现。本站文章供研究与学习；项目代码的使用条件以各仓库许可证为准，游戏数据及其他第三方资源的权利按其各自声明处理。
 :::
