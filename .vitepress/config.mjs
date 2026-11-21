@@ -44,6 +44,8 @@ export default defineConfig({
             { text: '写作与取证约定', link: '/lab/conventions' },
             { text: '时间线', link: '/lab/timeline' },
             { text: '本站是怎么搭的', link: '/lab/colophon' },
+            { text: '选型与风格', link: '/lab/stack' },
+            { text: '无聊条目', link: '/lab/trivia' },
             { text: '外部资源与致谢', link: '/lab/links' },
           ],
         },
