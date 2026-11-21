@@ -48,21 +48,22 @@ dotnet fsi                               # F# 交互式（脚本 / 试验语法�
 
 | 阶段 | 页面 | 到这里你会 |
 |---|---|---|
+| 先读这个 | [00 从 C# 过来](/fsharp/00-mindset) | 知道 F# 的默认值与 C# 差在哪、哪些直觉要换掉 |
 | 语言核心 | [01 函数](/fsharp/01-functions) | 知道 F# 的函数是什么、怎么组合、为什么参数是空格分隔 |
-| | [02 数据](/fsharp/02-data) | 用记录、判别联合、`option` 把领域模型写成类型 |
-| | [03 模式匹配](/fsharp/03-pattern-matching) | 用 `match` 拆解所有类型，并知道什么时候编译器会报「不完整」 |
-| | [04 集合与管道](/fsharp/04-collections) | 分清 `list` / `array` / `seq`，用管道运算符串起数据处理 |
-| | [05 模块与文件顺序](/fsharp/05-modules) | 组织命名空间与模块，理解为什么 `.fsproj` 的顺序不能乱 |
-| | [06 错误处理](/fsharp/06-errors) | 用 `Result` 表达可预期的失败，用异常表达程序错误 |
-| | [07 计算表达式](/fsharp/07-computation-expressions) | 读懂 `task { }` / `async { }`，并能自己写一个 builder |
-| 与 .NET 打交道 | [08 互操作](/fsharp/08-dotnet-interop) | 调用 C# 库、把 F# 类型交给 `System.Text.Json`、用委托对接框架 |
+| | [02 数据](/fsharp/02-data) | 用记录、判别联合、`option` 把领域模型写成类型；知道它们编译成什么 |
+| | [03 模式匹配](/fsharp/03-pattern-matching) | 用 `match` 拆解所有类型，并知道它怎么执行、什么时候报「不完整」 |
+| | [04 集合与管道](/fsharp/04-collections) | 分清 `list` / `array` / `seq` 的语义与复杂度，用管道串起数据处理 |
+| | [05 模块与文件顺序](/fsharp/05-modules) | 组织命名空间与模块，用 `.fsi` 控制公开面 |
+| | [06 错误处理](/fsharp/06-errors) | 用 `Result` 表达可预期失败，分清 fail-fast 与 collect-all |
+| | [07 计算表达式](/fsharp/07-computation-expressions) | 读懂 `task { }` / `async { }` 的完整翻译规则，并自己写 builder |
+| 与 .NET 打交道 | [08 互操作](/fsharp/08-dotnet-interop) | 调用 C# 库、把 F# 类型交给 `System.Text.Json`，也知道 C# 侧看到什么 |
 | 工程 | [09 测试](/fsharp/09-testing) | 给纯函数写零依赖测试，并让它以退出码报告结果 |
 | | [10 项目骨架](/fsharp/10-project-skeleton) | 三层项目结构（Domain / Web / Tests）与 `.fsproj` 的正确写法 |
-| Web | [11 路由与 JSON](/fsharp/11-routing-and-json) | 用 F# 函数做 minimal API 的 handler，并控制 JSON 形状 |
-| | [12 DI 与中间件](/fsharp/12-di-middleware) | 注册服务、注入 handler、写日志与异常中间件 |
+| Web | [11 路由与 JSON](/fsharp/11-routing-and-json) | 用 F# 函数做 minimal API 的 handler，用分组与过滤器组织端点 |
+| | [12 DI 与中间件](/fsharp/12-di-middleware) | 注册服务、注入 handler、写日志与异常中间件、绑定配置 |
 | | [13 完整项目](/fsharp/13-complete-project) | 把上面全部拼成一个能 `curl` 的服务 |
 | | [14 发布](/fsharp/14-publish) | 产出可分发的文件，并知道 AOT 在 F# 里的真实限制 |
-| 收尾 | [15 坑与校准](/fsharp/15-pitfalls) | 避开 12 个最常见的误解 |
+| 收尾 | [15 坑与校准](/fsharp/15-pitfalls) | 避开 15 个最常见的误解 |
 | | [速查表](/fsharp/cheatsheet) | 一页查完语法与命令 |
 
 ## 场景：Duel

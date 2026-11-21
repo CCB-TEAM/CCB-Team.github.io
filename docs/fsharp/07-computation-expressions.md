@@ -30,6 +30,23 @@ HTTP 处理器要等 IO：写响应是异步的、调用下游是异步的。同
 一个 builder 只要实现这两个方法（加上 `ReturnFrom`、`Zero` 等可选成员），
 就能定义一门小语言的语义。
 
+**2.1 其余关键字的翻译**（写自定义 builder 时才需要全部实现）：
+
+| 写法 | 翻译成 | 何时被用到 |
+|---|---|---|
+| 块的整体 | `builder.Delay(fun () -> ...)`，再 `builder.Run(...)` | 有 `Delay`/`Run` 时块体会被包成函数，从而支持惰性与重复执行 |
+| 顺序两条语句 | `builder.Combine(a, b)` | 前一条不产生最终值（例如 `do!` 之后还有语句） |
+| 空块 / `if` 无 `else` | `builder.Zero()` | 需要「什么都不做」的值 |
+| `for x in xs do ...` | `builder.For(xs, fun x -> ...)` | 循环 |
+| `while c do ...` | `builder.While((fun () -> c), ...)` | 循环 |
+| `try ... with` | `builder.TryWith(...)` | 块内异常处理 |
+| `try ... finally` | `builder.TryFinally(...)` | 块内清理 |
+| `yield e` | `builder.Yield(e)` | 序列/集合类 builder |
+| `match! e with ...` | `builder.Bind(e, fun v -> match v with ...)` | 先等再匹配 |
+
+这解释了一件常让人困惑的事：**为什么自定义 builder 只实现 `Bind`/`Return` 就能用 `let!`，
+但写 `if` 不带 `else` 就报错**——因为后者需要 `Zero` 与 `Combine`。
+
 **3. 普通 `let` 在 CE 里仍然是普通绑定**，只有带 `!` 的才走 `Bind`。
 
 **4. `task { ... }` 是 FSharp.Core 内置的 builder，产出 `Task<'T>`。**
@@ -143,6 +160,21 @@ app.Use(
    正好匹配 `Func<...>` 委托；
 2. `do! next.Invoke(context)` 是「等下游处理完」，返回值是 `unit`；
 3. `task { }` 里可以用 `try ... with` 包住 `do!`，异常会在等待处被捕获——下一章的异常中间件就是这个形状。
+
+## C# 视角
+
+| C# 里的直觉 | F# 里的定义 | 结果 |
+|---|---|---|
+| `async Task<T>` 方法 + `await` | `task { let! x = ... }` 表达式 | 语义几乎一致（都立即开始） |
+| `await` 只能出现在 `async` 方法里 | `let!` 只能出现在 CE 块里 | 同样的限制 |
+| 编译器把方法重写成状态机 | 编译器把块翻译成 `Bind`/`Return` 调用 | 机制不同，结果相似 |
+| `ConfigureAwait(false)` | `let! x = someTask.ConfigureAwait(false)` | 写法一样，直接作用在 Task 上 |
+| `yield return` 迭代器 | `seq { yield ... }` | 同一类语法糖，builder 不同 |
+| 手写状态机 / 回调 | 自定义 builder | CE 是「可扩展的 await」 |
+
+一个 C# 里没有的对应物：F# 的 CE 是**语法层面的开放机制**——`task`、`async`、`seq` 用的是同一个语法，
+只是 builder 不同。所以「实现一个自己的 `Result` 工作流」在 F# 里是十几行的事（见上面 `MaybeBuilder`），
+在 C# 里要改编译器（或者用第三方库的 `async` 变体）。
 
 ## 练习
 

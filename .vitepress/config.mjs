@@ -39,6 +39,7 @@ export default defineConfig({
           text: 'F# 入门',
           items: [
             { text: '总览与路线', link: '/fsharp/' },
+            { text: '00 · 从 C# 过来：思维转换', link: '/fsharp/00-mindset' },
             { text: '01 · 函数', link: '/fsharp/01-functions' },
           ],
         },

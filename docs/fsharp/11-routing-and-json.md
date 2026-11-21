@@ -160,6 +160,67 @@ POST /matches/{id}/finish  {"winner":"乙"}
 200 {"status":"finished:乙", ...}
 ```
 
+## 路由分组与端点过滤器
+
+八个端点平铺在 `Program.fs` 里还行，再多就需要分组。`MapGroup` 返回一个分组，
+在它上面挂的路由共享前缀与配置：
+
+```fsharp
+let games =
+    app.MapGroup("/games").AddEndpointFilter(requireToken)
+
+// GameOptions 与 IOptions 的用法见第 12 章的「配置绑定」
+games.MapGet(
+    "/settings",
+    Func<IOptions<GameOptions>, IResult>(fun options ->
+        let value = options.Value
+        Results.Ok({| maxDeckSize = value.MaxDeckSize; startingHand = value.StartingHand |}))
+)
+|> ignore
+
+games.MapGet("/ping", Func<IResult>(fun () -> Results.Ok({| pong = true |}))) |> ignore
+```
+
+`AddEndpointFilter` 的参数是 `Func<EndpointFilterInvocationContext, EndpointFilterDelegate, ValueTask<obj>>`：
+
+```fsharp
+let requireToken =
+    Func<EndpointFilterInvocationContext, EndpointFilterDelegate, ValueTask<obj>>(fun context next ->
+        if context.HttpContext.Request.Headers.ContainsKey "X-Token" then
+            next.Invoke context
+        else
+            ValueTask<obj>(Results.Unauthorized()))
+```
+
+三个要点：
+
+1. 过滤器的返回值是 `obj`（装的是 `IResult` 或处理器返回值），所以**短路**就是直接返回一个 `IResult`，
+   不要调 `next`；
+2. `next.Invoke context` 返回 `ValueTask<obj>`，不短路时原样返回即可；
+3. 组级过滤器对组内**所有**路由生效，包括之后加进来的。
+
+实测：
+
+```text
+GET /games/settings               -> 401（没有 X-Token）
+GET /games/settings  X-Token: 1   -> 200 {"maxDeckSize":30,"startingHand":5}
+GET /games/ping      X-Token: 1   -> 200 {"pong":true}
+```
+
+过滤器与中间件的区别：**中间件**在管道层，拿不到「这次命中了哪个端点、参数是什么」；
+**端点过滤器**在端点层，能读 `context.Arguments`、也能短路成 `IResult`，
+所以适合做「按端点做参数校验 / 授权 / 统一响应包装」。
+
+## C# 视角
+
+| C# 里的直觉 | F# 里的定义 | 结果 |
+|---|---|---|
+| `app.MapGet("/x", (int id) => ...)` | `Func<int, IResult>(fun id -> ...)` | 必须显式给委托类型，因为参数是 `Delegate` |
+| 控制器 + `[FromBody]` / `[FromRoute]` 标注 | 靠**参数名与类型**推断绑定来源 | 名字就是契约 |
+| `IActionResult` / `ActionResult<T>` | `IResult` | 同一个思路，接口更简单 |
+| `return Ok(x)` | `Results.Ok(x)` | 一样 |
+| 特性（attribute）做授权 | 端点过滤器 / `RequireAuthorization()` | 过滤器更像「中间件 + 端点上下文」 |
+
 ## 练习
 
 1. 加一个 `GET /cards?faction=Soviet` 的过滤参数，用查询字符串绑定（参数名 `faction`）。

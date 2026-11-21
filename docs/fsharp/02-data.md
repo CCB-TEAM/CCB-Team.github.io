@@ -173,6 +173,92 @@ structuralEqual = true
 tigerAttack = 5
 ```
 
+## 编译成什么（决定了 JSON 与互操作）
+
+F# 的记录与 DU 会编译成普通的 .NET 类型，形状可以用反射直接看到（下面都是实测输出）：
+
+| 定义 | 编译结果 |
+|---|---|
+| `type Card = { Id: string; Attack: int }` | 一个 **sealed class**，每个字段是一个只读属性（`Id`、`Attack`），构造器接收全部字段 |
+| `type Shape = Circle of float \| Square of float` | 一个 **abstract 基类**，每个 case 是一个嵌套子类（`Circle`、`Square`），`Circle 2.0` 的运行时类型就是 `Shape+Circle` |
+| `type Faction = Germany \| Britain`（全部 case 无字段） | 一个 **sealed class**，不产生子类；case 是静态值，用 tag 区分 |
+| `let add a b = a + b` | 一个静态方法 `add(a, b)`；**当它被当作值传递时**，编译器另外生成 `FSharpFunc<int, FSharpFunc<int, int>>` 的闭包对象 |
+
+结论：
+
+- **记录可以直接给任何 .NET 序列化器用**，因为它就是「带只读属性的类」。
+- **DU 需要转换器**：`System.Text.Json` 看到的是「抽象基类 + 子类」，它不知道 `Tag` 与字段的对应关系，
+  所以要么转成 DTO（本文的做法），要么引入支持 F# 的转换器。
+- **柯里化只影响「把函数当值用」的场景**：直接调用时，C# 侧看到的是多参数静态方法
+  （实测 `Rules.play` 编译成 `play(Match, String, String)`）；把它赋给变量或传给高阶函数时，
+  才会出现 `FSharpFunc`。
+
+## 用类型挡住错误
+
+这一节是本章真正的目的：**让非法状态在编译期就写不出来，而不是在运行期校验**。
+
+**① 单 case DU 做「严格 id」。** `type CardId = string` 只是别名，任何 string 都能混进去；
+单 case DU 才是新类型：
+
+```fsharp
+type CardId = private CardId of string
+
+module CardId =
+    let create (raw: string) =
+        if System.String.IsNullOrWhiteSpace raw then Error "空的卡牌 id"
+        else Ok(CardId raw)
+
+    let value (CardId raw) = raw
+```
+
+`private` 把构造器藏起来，外部只能通过 `create` 得到值——于是「空 id」不可能进入系统。
+实测输出：`CardId.create "g_001"` 得到 `Ok (CardId "g_001")`，`CardId.create " "` 得到
+`Error "空的卡牌 id"`。
+
+**② 状态机写成 DU。** 用的是三个 case 的联合，而不是「枚举 + 若干个可能为 null 的字段」：
+
+```fsharp
+type MatchStatus =
+    | Waiting
+    | Running
+    | Finished of winner: string option
+```
+
+`Finished` 一定带胜者字段，`Running` 一定不带——不存在「Running 但有胜者」这种中间状态。
+
+**③ 同名 case 加限定。** 两个 DU 都有 `Running` 时，用 `[<RequireQualifiedAccess>]` 强制写
+`Status.Running`，避免 `open` 之后名字打架：
+
+```fsharp
+type [<RequireQualifiedAccess>] Side = Left | Right
+
+Side.Left      // 必须带限定
+```
+
+**④ 性能敏感的地方用结构体记录。** `[<Struct>]` 让记录变成值类型，避免堆分配：
+
+```fsharp
+[<Struct>]
+type Point = { X: int; Y: int }
+```
+
+代价是复制语义与大结构体的拷贝开销；只在热点路径、字段少、生命周期短时用。
+
+## C# 视角
+
+| C# 里的直觉 | F# 里的定义 | 结果 |
+|---|---|---|
+| `class` + 属性 + 构造器 | 记录 = 字段全在构造器里 | 不存在「半初始化」对象 |
+| 属性 `{ get; set; }` | 字段默认只读；要改就 `mutable` 或写 `with` | 改值要显式 |
+| `enum` | 判别联合 | 可带数据、无整数值、封闭 |
+| `record`（C# 9） | 记录 | 概念接近；F# 的还带结构比较 |
+| `T?` / `null` | `option` | 缺失进类型 |
+| `abstract class` + 子类 | DU（封闭）/ 接口（开放） | 按「要不要允许外部扩展」选 |
+| `GetHashCode`/`Equals` 手写 | 自动生成；要自定义用 `[<CustomEquality>]` 等 | 默认就正确 |
+
+注意 C# 的 `record` 与 F# 的记录**不是一回事**：C# 的 `record` 是引用类型、默认可变属性、
+相等性基于属性；F# 的记录是 sealed、只读属性、不可继承。
+
 ## 练习
 
 1. 给 `Card` 加一个 `Rarity` 字段（`Common | Rare | Elite`），并写一个函数把它转成字符串。

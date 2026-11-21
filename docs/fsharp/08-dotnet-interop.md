@@ -126,8 +126,9 @@ Option.ofObj "abc"       // Some "abc"
 ```
 
 **9. 模块编译成静态类。** `module Duel.Web.Api` 编译后是 `Duel.Web.Api` 类，里面的 `let` 是静态方法。
-C# 侧可以直接 `Duel.Web.Api.health()` 调用（柯里化函数会变成「返回 `FSharpFunc` 的方法」，
-在 C# 里调用体验不好——所以给 C# 用的 API 建议用元组参数或类）。
+实测：`Rules.play` 编译成 `play(Match, String, String)`——柯里化不影响方法签名，
+C# 侧可以直接 `Duel.Web.Api.health()` 或 `Rules.play(game, player, card)` 调用。
+C# 做不到的只有「部分应用」（少传几个参数得到一个函数值），需要的话自己包一层。
 
 ## 代码与输出
 
@@ -157,6 +158,29 @@ POST /matches
 - 已注册到 DI 的类型从容器取（`ICardStore`、`MatchStore`）。
 
 所以 F# lambda 的参数**名字**是有语义的：写成 `fun identifier store -> ...` 就绑不上 `{id}`。
+
+## C# 侧看到的是什么
+
+如果另一个 C# 项目引用这个 F# 库，它看到的是普通的 .NET 类型（实测形状见第 2 章）：
+
+| F# | C# 侧 | 注意 |
+|---|---|---|
+| `type Card = { Id: string; Attack: int }` | `sealed class Card { string Id { get; } int Attack { get; } }` | 只读属性；构造器 `Card(string, int)` |
+| `type MatchStatus = Waiting \| Running \| Finished of string option` | `abstract class MatchStatus` + `MatchStatus.Finished` 等嵌套类 | 用 `is` / `switch` 判断，也可以读 `Tag` |
+| `let validateDeck known deck = ...` | `static FSharpResult<Deck, FSharpList<string>> validateDeck(FSharpSet<string>, Deck)` | 多参静态方法，可直接调用；不能部分应用 |
+| `let health () = ...` | `static IResult health()` | `unit` 参数在 IL 里没有对应参数 |
+| `int option` | `FSharpOption<int>`（`None` 是 `null`） | 需要 `OptionModule` 或判空 |
+| `'T list` | `FSharpList<'T>` | 实现 `IReadOnlyList<'T>` / `IEnumerable<'T>` |
+
+**给 C# 用的 API 怎么设计**（三条就够了）：
+
+1. **需要部分应用就给 F# 用柯里化版本，给 C# 另外包一个元组版本**：
+   两者编译后都是多参静态方法，但只有元组版本在 C# 里读起来是「正常的方法调用」。
+2. **返回 `Task<'T>`，不要 `Async<'T>`**：C# 不认识 `Async`，虽然能转但要包一层。
+3. **不要在公共签名里用 `option`/DU**：要么提供 `bool TryX(out T)` 风格的包装函数，
+   要么把 DU 转成枚举 + 属性（但那等于放弃 DU 的封闭性，所以通常干脆给 C# 用专门的 DTO）。
+
+反过来，**F# 用 C# 库**没什么特别注意的：接口实现、委托转换、`Task` 都在前面几节讲完了。
 
 ## 练习
 

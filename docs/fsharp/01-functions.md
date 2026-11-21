@@ -129,8 +129,24 @@ max 0 (attack - defense)      // 想要的是这个
 **没有参数却写成 `let f = ...`。** 例如 `let now = DateTime.Now` 在绑定那一刻就求值一次；
 想要「每次调用都取当前时间」，必须写 `let now () = DateTime.Now`。
 
-## 与 C# 的差异（只记一句）
+## C# 视角
 
-C# 的方法必须包在类型里；F# 的 `let` 绑定可以写在模块（`module`）里，编译后就是一个静态方法，
-所以它照样能被 C# 调用——只是在 C# 侧看起来是「接收第一个参数、返回一个 `FSharpFunc`」。这一点在
-[08 互操作](/fsharp/08-dotnet-interop)里会再解释。
+| C# 里的直觉 | F# 里的定义 | 结果 |
+|---|---|---|
+| 方法必须写在类里 | `let` 绑定可以写在模块里，编译成静态方法 | 不需要为了放一个函数造一个类 |
+| `void` 方法 + `return;` | `unit` 是类型，只有一个值 `()`；函数体最后一个表达式就是返回值 | 没有 `return` 语句 |
+| `if (c) return a; return b;` | `if c then a else b` | 「提前返回」写成表达式分支 |
+| 方法重载 | 同名函数不能靠参数类型区分（同一模块内） | 用不同的名字，或放到不同类型/模块上 |
+| 局部函数、lambda | 同样是 `fun`；`let` 里可以定义内嵌函数 | 没有区别 |
+| `ref`/`out` 参数 | 多返回值用元组，或返回 `Result`/`option` | `TryParse` 风格变成元组模式匹配 |
+
+关于最后一条：C# 的 `TryParse(string, out int)` 在 F# 里也是方法，调用方式是元组模式：
+
+```fsharp
+match System.Int32.TryParse text with
+| true, n -> Ok n
+| _ -> Error(sprintf "不是整数：%s" text)
+```
+
+`Int32.TryParse` 有多个重载（`string` / `ReadOnlySpan<char>` / `ReadOnlySpan<byte>`），
+所以 `text` 必须有类型注解，否则报 `FS0041`（见[第 15 章](/fsharp/15-pitfalls)）。

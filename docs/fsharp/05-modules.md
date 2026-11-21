@@ -134,6 +134,61 @@ Domain  ←  Tests   （Tests 引用 Domain）
 
 这个判据可以概括成一句：**越靠下的文件越不应该知道上层的东西**。
 
+## 签名文件：只暴露你想暴露的
+
+F# 允许给一个源文件配一个**签名文件**（`.fsi`），声明「这个文件对外只有这些」。没写进签名的
+绑定，外部一律看不见——即使它是公开的。
+
+`Lib.fsi`：
+
+```fsharp
+module Lib
+
+/// 把数字翻倍。
+val double: x: int -> int
+
+/// 公开的常量。
+val MaxSize: int
+```
+
+`Lib.fs`：
+
+```fsharp
+module Lib
+
+let double x = x * 2
+let internalSecret () = 42
+let MaxSize = 30
+```
+
+项目文件里签名必须写在源文件**之前**：
+
+```xml
+<ItemGroup>
+  <Compile Include="Lib.fsi" />
+  <Compile Include="Lib.fs" />
+  <Compile Include="Program.fs" />
+</ItemGroup>
+```
+
+实测：外部调用 `Lib.internalSecret ()` 会编译失败——
+
+```text
+error FS0039: 未定义值、构造函数、命名空间或类型“internalSecret”。
+```
+
+签名文件的价值是把「公开面」变成需要显式维护的东西：加一个函数而忘了写进 `.fsi`，
+它就不会泄漏出去。代价是每改一次公共 API 都要同步改两处，所以小项目通常不写。
+
+## 模块属性
+
+| 属性 | 作用 |
+|---|---|
+| `[<RequireQualifiedAccess>]`（在 DU / 模块上） | 强制写 `Side.Left`，防止 `open` 后同名 case 打架 |
+| `[<AutoOpen>]`（在模块上） | 引用包含它的命名空间时自动 `open` 它；慎用，会让名字来源变模糊 |
+| `[<CompiledName("X")>]` | 改编译后的 .NET 名字，给 C# 侧一个更顺的名字 |
+| `[<Literal>]` | 编译期常量，可用于 `[<Literal>]` 参数与特性参数（`Rules.MaxDeckSize` 就用了它） |
+
 ## 练习
 
 1. 把 `Seed.cards` 从 `Stores.fs` 挪到单独的 `Seed.fs`，想想它应该排在哪个位置。

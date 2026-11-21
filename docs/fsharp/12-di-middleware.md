@@ -169,6 +169,65 @@ info: Duel.Http[0]
 注意顺序：日志中间件在外层，所以它记录到的是 `500`——异常中间件已经改过状态码。
 如果把日志放在异常中间件**里面**，`/boom` 那条日志就永远不会被写出来（异常直接穿过它）。
 
+## 配置绑定：`IOptions<T>`
+
+配置项不要用 `builder.Configuration["Key"]` 到处读，改成「绑定成一个类型 + 注入」：
+
+`appsettings.json`：
+
+```json
+{
+  "Game": {
+    "MaxDeckSize": 30,
+    "StartingHand": 5
+  }
+}
+```
+
+```fsharp
+[<CLIMutable>]
+type GameOptions =
+    { MaxDeckSize: int
+      StartingHand: int }
+
+builder.Services.Configure<GameOptions>(builder.Configuration.GetSection "Game") |> ignore
+```
+
+处理器用 `IOptions<T>` 取：
+
+```fsharp
+app.MapGet(
+    "/games/settings",
+    Func<IOptions<GameOptions>, IResult>(fun options ->
+        let value = options.Value
+        Results.Ok({| maxDeckSize = value.MaxDeckSize; startingHand = value.StartingHand |}))
+)
+|> ignore
+```
+
+实测响应：`{"maxDeckSize":30,"startingHand":5}`。
+
+三个要点：
+
+1. **`[<CLIMutable>]` 是必需的**：配置绑定器需要无参构造 + 可写属性，纯记录是只读的。
+2. `Configure<T>` 注册的是 `IOptions<T>`（单例、启动后不变）；要热更新用 `IOptionsMonitor<T>`。
+3. 绑定失败（比如 JSON 里给了字符串给 int 字段）在**第一次读 `options.Value` 时**抛异常，
+   不是启动时——所以配置错误常常表现为「第一个请求 500」。
+
+## C# 视角
+
+| C# 里的直觉 | F# 里的定义 | 结果 |
+|---|---|---|
+| 构造函数注入 `IService` | 服务作为函数参数（处理器）或构造器参数（类） | 都是「显式依赖」 |
+| `services.AddSingleton<IFoo, Foo>()` | 同样可用；也可 `AddSingleton(实例)` | 容器负责生命周期，不负责构造顺序 |
+| `IConfiguration["Key"]` | 绑定成 `[<CLIMutable>]` 记录 + `IOptions<T>` | 类型化配置 |
+| `app.Use(...)` 中间件 | `Func<HttpContext, RequestDelegate, Task>` | 同一个管道模型 |
+| `Action<HttpContext>` 短路 | 不调 `next` 即短路 | 顺序决定一切 |
+| 特性做横切关注点 | 中间件 / 端点过滤器 | 显式注册顺序 |
+
+F# 里没有「隐式依赖」这回事：处理器需要的服务必须出现在参数列表里，中间件需要的状态必须从
+`HttpContext.RequestServices` 取。读代码时不用翻构造函数。
+
 ## 练习
 
 1. 写一个中间件，给每个响应加 `X-Duel-Version: 1` 头。

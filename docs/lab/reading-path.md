@@ -67,11 +67,12 @@ title: 阅读路径
 ## 我想学 F#（或者从 C# 转过来）
 
 1. [F# 入门 · 总览](/fsharp/) —— 一条单线：从函数到完整的 ASP.NET Core 服务
-2. 语言核心：[函数](/fsharp/01-functions) → [数据](/fsharp/02-data) → [模式匹配](/fsharp/03-pattern-matching) →
+2. 先看思维差异（如果你写 C#）：[从 C# 过来：思维转换](/fsharp/00-mindset)
+3. 语言核心：[函数](/fsharp/01-functions) → [数据](/fsharp/02-data) → [模式匹配](/fsharp/03-pattern-matching) →
    [集合](/fsharp/04-collections) → [模块](/fsharp/05-modules) → [错误处理](/fsharp/06-errors) → [计算表达式](/fsharp/07-computation-expressions)
-3. 只想看和 .NET 打交道：[互操作](/fsharp/08-dotnet-interop) → [路由与 JSON](/fsharp/11-routing-and-json) → [DI 与中间件](/fsharp/12-di-middleware)
-4. 想要能跑的成品：[完整项目](/fsharp/13-complete-project)（六个文件 + 运行输出）
-5. 被编译错误卡住：[坑与校准](/fsharp/15-pitfalls) · [速查表](/fsharp/cheatsheet)
+4. 只想看和 .NET 打交道：[互操作](/fsharp/08-dotnet-interop) → [路由与 JSON](/fsharp/11-routing-and-json) → [DI 与中间件](/fsharp/12-di-middleware)
+5. 想要能跑的成品：[完整项目](/fsharp/13-complete-project)（六个文件 + 运行输出）
+6. 被编译错误卡住：[坑与校准](/fsharp/15-pitfalls) · [速查表](/fsharp/cheatsheet)
 
 ## 我只想知道这个组靠不靠谱
 

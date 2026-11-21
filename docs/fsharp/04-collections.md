@@ -136,6 +136,55 @@ foldTotal = 9, summed = 9
 
 `list` 与 `array` 都是**立即求值**的：`List.map` 返回时结果已经算好。
 
+## 数据结构与复杂度
+
+选集合类型时真正要看的是「怎么用」，而不是「哪个名字好听」：
+
+| 操作 | `list` | `array` | `Map`/`Set` |
+|---|---|---|---|
+| 取第 i 个 | O(i) | O(1) | — |
+| 头部插入 | O(1)，共享尾部 | O(n)（要复制） | — |
+| 尾部追加 | O(n) | O(n)（长度固定，`Array.append` 复制） | — |
+| 按 key 查找 | — | — | O(log n) |
+| 遍历全部 | O(n) | O(n) | 有序遍历 |
+| 内存 | 每节点一个对象 + 指针 | 连续块 | 树节点 |
+
+两条来自定义的结论：
+
+1. **`list` 是单链表**：`x :: xs` 不复制 `xs`，所以「先构造小列表，再反复 prepend」很便宜；
+   反过来「反复 append」很贵——这正是 `Rules.play` 用 `Log = move :: game.Log`（头插）而不是
+   `Log @ [ move ]` 的原因。展示时再 `List.rev` 一次。
+2. **`Map` / `Set` 是持久化（persistent）数据结构**：每次 `Map.add` 返回新结构，
+   但与旧结构**共享大部分节点**，所以不是 O(n) 复制。代价是常数比 `Dictionary` 大，
+   且要求 key 可比较。
+
+要「就地修改的字典 / 列表」时用 .NET 的可变类型，F# 也直接支持：
+
+```fsharp
+let counts = System.Collections.Generic.Dictionary<string, int>()
+counts.["g_001"] <- 3
+counts.TryGetValue "g_002"   // 返回 bool * int
+
+let buffer = ResizeArray<int>()   // 就是 List<int>
+buffer.Add 1
+let snapshot = List.ofSeq buffer
+```
+
+规矩是：**可变类型不要跨函数边界长期暴露**。在函数内部建好、用 `Seq.toList` / `Array.ofSeq`
+收口成不可变值再返回，调用方就不需要知道它是怎么攒起来的。
+
+## C# 视角
+
+| C# 里的直觉 | F# 里的定义 | 结果 |
+|---|---|---|
+| `List<T>` 是可变数组 | `'T list` 是不可变单链表；`ResizeArray<'T>` 才是 `List<T>` | 「加一个元素」要重新绑定 |
+| `list.Add` 就地改 | `x :: xs` 返回新列表 | 循环改列表 → `map`/`fold`/推导 |
+| `IEnumerable<T>` 随时可枚举 | `seq<'T>` 就是 `IEnumerable<'T>`，惰性且**每次重新计算** | 重复枚举要 `Seq.cache` |
+| LINQ 链式调用 | `\|>` 管道 + 模块函数 | 数据放最前面，读起来是数据流 |
+| `Dictionary<K,V>` | `Map<K,V>`（持久化）/ `Dictionary`（可变） | 要性能就地改，用后者 |
+| `for` 循环 + `if` 收集 | 列表推导 `[ for x in xs do if c then ... ]` | 表达式而非语句 |
+| `foreach` 里 `break` | `Seq.takeWhile` / `Seq.tryFind` / 递归 | 没有 `break` |
+
 ## 练习
 
 1. 用 `List.choose` 把「卡牌列表」变成「攻击力 ≥ 3 的卡名列表」，一步完成过滤与投影。

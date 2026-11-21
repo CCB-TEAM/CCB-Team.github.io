@@ -151,6 +151,77 @@ let play (id: string) (request: PlayCardRequest) (store: MatchStore) : IResult =
 这里有三层失败：解析失败（400）、找不到（404）、规则拒绝（400）。
 每一层都由类型驱动：`Guid.TryParse` 返回元组、`TryFind` 返回 `option`、`Rules.play` 返回 `Result`。
 
+## fail-fast 与 collect-all
+
+`Result.bind` 是**单子式**组合：第一步失败就短路，后面的步骤根本不执行。适合「后面依赖前面」的流程
+（先解析 id，再查对局，再改状态）。
+
+但**校验**不一样：卡组同时有「名字为空」和「超过 30 张」时，用户希望一次看到两条，
+而不是改一条再提交一次。这需要**应用式**（applicative）组合：把两个独立结果合起来，
+错误合并、绝短路。标准库里没有现成的 `Result<'T,'E list>` 应用式组合子，自己写十行：
+
+```fsharp
+let apply (fResult: Result<'a -> 'b, 'e list>) (xResult: Result<'a, 'e list>) : Result<'b, 'e list> =
+    match fResult, xResult with
+    | Ok f, Ok x -> Ok(f x)
+    | Error e1, Error e2 -> Error(e1 @ e2)
+    | Error e, _ -> Error e
+    | _, Error e -> Error e
+
+let checkName (name: string) = if name = "" then Error [ "名字为空" ] else Ok name
+let checkSize (n: int) = if n > 30 then Error [ "超过 30" ] else Ok n
+
+let combined = apply (apply (Ok (fun name size -> name, size)) (checkName "")) (checkSize 31)
+```
+
+实测：`combined` = `Error ["名字为空"; "超过 30"]`——两条错误都在。
+
+三条判据：
+
+| 需求 | 组合方式 | 行为 |
+|---|---|---|
+| 步骤之间有依赖（上一步的输出是下一步的输入） | `Result.bind` | 第一个 `Error` 短路 |
+| 步骤互相独立、要一次报全 | 应用式 `apply` / 手写 `Validation` | 收集全部 `Error` |
+| 只要「有没有问题」，不要原因 | `option` | 第一个 `None` 短路 |
+
+本文的 `validateDeck` 走的是第二条的另一种实现：它不返回 `Result` 而是先用列表收集，
+最后统一包装成 `Result`——等价，且少一层组合子。
+
+## 异常过滤器：按内容分支，不按类型分支
+
+`try ... with` 的分支也支持 `when`，条件不成立就继续试下一个分支：
+
+```fsharp
+exception TransientError of string
+
+let classify (input: string) =
+    try
+        if input = "timeout" then raise (TransientError "timeout after 3s")
+        else raise (TransientError "bad input")
+    with
+    | TransientError msg when msg.Contains "timeout" -> "可重试：" + msg
+    | TransientError msg -> "不可重试：" + msg
+    | ex -> "其它：" + ex.GetType().Name
+```
+
+实测：`classify "timeout"` = `可重试：timeout after 3s`，`classify "bad"` = `不可重试：bad input`。
+
+这比「先捕获再 `if` 判断再重新抛」干净：过滤器不成立时异常继续传播，
+不会出现「捕获了又抛出去」的中间状态（也就不会丢栈）。
+
+## C# 视角
+
+| C# 里的直觉 | F# 里的定义 | 结果 |
+|---|---|---|
+| 参数不对就 `throw new ArgumentException` | 业务失败进 `Result`，异常留给 bug | 调用方必须处理失败分支 |
+| `catch (Exception ex)` 统一兜底 | `Result` 在签名里；异常只在边界处理 | 失败可见、可组合 |
+| `TryParse` + `out` | 元组 + `Result` | 没有 `out` 参数 |
+| 用条件判断决定抛哪种异常 | `when` 过滤器 / DU 错误类型 | 分支与类型都显式 |
+| 自定义异常类层次 | `type DeckError = MissingName \| EmptyDeck \| ...` | 封闭、可穷尽匹配、可映射到状态码 |
+
+`Result` 与异常不是二选一：整个应用仍然要有异常边界（第 12 章的中间件），
+只是**边界之内**的业务失败用值表达。
+
 ## 练习
 
 1. 把 `Rules.validateDeck` 的错误类型从 `string list` 改成 `DeckError list`，
