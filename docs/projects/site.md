@@ -30,6 +30,7 @@ CCB-Team.github.io/
 │   ├── private-server/            # 《自己写私服》教程（含 appendix/）
 │   ├── kismet-sim/                # Kismet 直译模拟器专题
 │   ├── ue5-re/ ue5-bp/            # UE5 运行时逆向 / 蓝图逆向专题
+│   ├── fsharp/                    # F# 入门教程（从函数到 ASP.NET Core 项目）
 │   └── lab/                       # 杂项与随笔（术语表、工具箱、问答…）
 ├── scripts/sync-projects.mjs      # 从 GitHub 同步公开仓库清单
 └── package.json

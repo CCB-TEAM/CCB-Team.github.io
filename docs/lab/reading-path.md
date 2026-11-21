@@ -64,6 +64,15 @@ title: 阅读路径
    [为什么是 AST](/kismet-sim/01-why-ast) · [调用约定](/kismet-sim/02-calling-convention) · [触发点体系](/kismet-sim/03-triggers) · [审计方法论](/kismet-sim/04-audit) · [坑与复盘](/kismet-sim/05-pitfalls)
 3. 另一个方向：[kards-client-headless](/projects/kards-client-headless)（Rust 规则核心 + C# 网络层，小卡池原型）
 
+## 我想学 F#（或者从 C# 转过来）
+
+1. [F# 入门 · 总览](/fsharp/) —— 一条单线：从函数到完整的 ASP.NET Core 服务
+2. 语言核心：[函数](/fsharp/01-functions) → [数据](/fsharp/02-data) → [模式匹配](/fsharp/03-pattern-matching) →
+   [集合](/fsharp/04-collections) → [模块](/fsharp/05-modules) → [错误处理](/fsharp/06-errors) → [计算表达式](/fsharp/07-computation-expressions)
+3. 只想看和 .NET 打交道：[互操作](/fsharp/08-dotnet-interop) → [路由与 JSON](/fsharp/11-routing-and-json) → [DI 与中间件](/fsharp/12-di-middleware)
+4. 想要能跑的成品：[完整项目](/fsharp/13-complete-project)（六个文件 + 运行输出）
+5. 被编译错误卡住：[坑与校准](/fsharp/15-pitfalls) · [速查表](/fsharp/cheatsheet)
+
 ## 我只想知道这个组靠不靠谱
 
 - [项目总览](/projects/)：每个项目的架构、实现细节与**边界**都写在同一页

@@ -16,6 +16,7 @@ export default defineConfig({
       { text: '模拟器', link: '/kismet-sim/', activeMatch: '^/kismet-sim/' },
       { text: 'UE5 逆向', link: '/ue5-re/', activeMatch: '^/ue5-re/' },
       { text: '蓝图逆向', link: '/ue5-bp/', activeMatch: '^/ue5-bp/' },
+      { text: 'F#', link: '/fsharp/', activeMatch: '^/fsharp/' },
       { text: '杂项', link: '/lab/', activeMatch: '^/lab/' },
       { text: '团队', link: '/about/', activeMatch: '^/about/' },
     ],
@@ -28,6 +29,63 @@ export default defineConfig({
             { text: '全部公开项目', link: '/projects/' },
             { text: '安全 QA', link: '/security/' },
             { text: '自己写私服', link: '/private-server/' },
+            { text: 'F# 入门', link: '/fsharp/' },
+            { text: '杂项与随笔', link: '/lab/' },
+          ],
+        },
+      ],
+      '/fsharp/': [
+        {
+          text: 'F# 入门',
+          items: [
+            { text: '总览与路线', link: '/fsharp/' },
+            { text: '01 · 函数', link: '/fsharp/01-functions' },
+          ],
+        },
+        {
+          text: '语言核心',
+          items: [
+            { text: '02 · 数据：记录、联合与 option', link: '/fsharp/02-data' },
+            { text: '03 · 模式匹配', link: '/fsharp/03-pattern-matching' },
+            { text: '04 · 集合与管道', link: '/fsharp/04-collections' },
+            { text: '05 · 模块与文件顺序', link: '/fsharp/05-modules' },
+            { text: '06 · 错误处理', link: '/fsharp/06-errors' },
+            { text: '07 · 计算表达式', link: '/fsharp/07-computation-expressions' },
+          ],
+        },
+        {
+          text: '与 .NET 打交道',
+          items: [
+            { text: '08 · 互操作', link: '/fsharp/08-dotnet-interop' },
+          ],
+        },
+        {
+          text: '工程',
+          items: [
+            { text: '09 · 测试', link: '/fsharp/09-testing' },
+            { text: '10 · 项目骨架', link: '/fsharp/10-project-skeleton' },
+          ],
+        },
+        {
+          text: 'Web',
+          items: [
+            { text: '11 · 路由、绑定与 JSON', link: '/fsharp/11-routing-and-json' },
+            { text: '12 · DI、中间件与日志', link: '/fsharp/12-di-middleware' },
+            { text: '13 · 完整项目', link: '/fsharp/13-complete-project' },
+            { text: '14 · 发布', link: '/fsharp/14-publish' },
+          ],
+        },
+        {
+          text: '收尾',
+          items: [
+            { text: '15 · 坑与校准', link: '/fsharp/15-pitfalls' },
+            { text: '速查表', link: '/fsharp/cheatsheet' },
+          ],
+        },
+        {
+          text: '相关',
+          items: [
+            { text: '项目总览', link: '/projects/' },
             { text: '杂项与随笔', link: '/lab/' },
           ],
         },
