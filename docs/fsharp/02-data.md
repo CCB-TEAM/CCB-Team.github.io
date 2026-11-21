@@ -256,8 +256,9 @@ type Point = { X: int; Y: int }
 | `abstract class` + 子类 | DU（封闭）/ 接口（开放） | 按「要不要允许外部扩展」选 |
 | `GetHashCode`/`Equals` 手写 | 自动生成；要自定义用 `[<CustomEquality>]` 等 | 默认就正确 |
 
-注意 C# 的 `record` 与 F# 的记录**不是一回事**：C# 的 `record` 是引用类型、默认可变属性、
-相等性基于属性；F# 的记录是 sealed、只读属性、不可继承。
+注意 C# 的 `record` 与 F# 的记录**不是一回事**：C# 的 `record` 是引用类型、位置属性是 `init`-only
+（用 `with` 复制），相等性按属性；F# 的记录是 sealed、只读属性、不可继承，但它同时实现了
+结构比较（`<`、`>`），可以直接当 `Map` 的键。
 
 ## 练习
 

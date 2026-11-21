@@ -192,10 +192,10 @@ let validateDeck (known: Set<string>) (deck: Deck) : Result<Deck, string list> =
 
 **需求**：校验卡组——名字非空、不为空、不超过 30 张、卡牌都在库里，**一次返回全部错误**。
 
-C#（示意；`Result<,>` 是示意用的自定义类型，C# 里通常用异常或自定义返回结构）：
+C#（示意；现实中通常返回元组或自定义结果类型，或者干脆抛异常）：
 
 ```csharp
-public static Result<Deck, string[]> Validate(Deck deck, ISet<string> known)
+public static (bool Ok, string[] Errors) Validate(Deck deck, ISet<string> known)
 {
     var errors = new List<string>();
     if (string.IsNullOrWhiteSpace(deck.Name)) errors.Add("卡组需要一个名字");
@@ -203,9 +203,7 @@ public static Result<Deck, string[]> Validate(Deck deck, ISet<string> known)
     if (deck.Cards.Count > 30) errors.Add("卡组最多 30 张");
     foreach (var id in deck.Cards.Distinct())
         if (!known.Contains(id)) errors.Add($"未知卡牌：{id}");
-    return errors.Count == 0
-        ? Result<Deck, string[]>.Ok(deck)
-        : Result<Deck, string[]>.Error(errors.ToArray());
+    return (errors.Count == 0, errors.ToArray());
 }
 ```
 
@@ -230,8 +228,10 @@ let validateDeck (known: Set<string>) (deck: Deck) : Result<Deck, string list> =
 
 差异不在长度，而在三处：
 
-1. F# 用**列表推导**把「条件成立才产生一条错误」写成列表的一部分，不需要先声明容器再 `Add`；
-2. 返回类型 `Result<Deck, string list>` 把失败写进了签名，调用方必须 `match`；
+1. **返回值把「成功」与「失败」分开表达。** C# 用 `(bool Ok, string[] Errors)` 这种元组，
+   调用方可以忽略 `Ok` 直接看 `Errors`；F# 的 `Result<Deck, string list>` 是二选一，
+   拿到 `Ok` 分支就一定有 `Deck`，拿到 `Error` 分支就一定有错误列表。
+2. F# 用**列表推导**把「条件成立才产生一条错误」写成列表的一部分，不需要先声明容器再 `Add`。
 3. 没有可变状态——`errors` 建好就是最终值，不存在「忘了某个分支又没 `Add`」的中间状态。
 
 ## 10. 十个自检问题
@@ -257,4 +257,4 @@ let validateDeck (known: Set<string>) (deck: Deck) : Result<Deck, string list> =
 - **团队习惯**：强行在一个 C# 团队里推行 F# 的写法，收益通常小于摩擦；
   F# 更适合「新写的、边界清晰的模块」。
 
-后面 15 章的内容都是这三条的具体版本。
+后面十五章（01–15）的内容，都是这三条的具体版本。
