@@ -18,13 +18,19 @@ title: CCB-Team.github.io —— 本站
 ```
 CCB-Team.github.io/
 ├── .github/workflows/deploy.yml   # 构建 + 部署到 Pages
-├── .vitepress/config.mjs          # 站点配置：nav / sidebar / 主题文案
+├── .vitepress/config.mjs          # 站点配置：nav / sidebar / 搜索 / 主题文案
 ├── docs/
 │   ├── index.md                   # 首页（hero + 方向卡片）
+│   ├── 404.md                     # 自定义「页面不存在」
+│   ├── about/                     # 团队介绍
 │   ├── projects/                  # 项目介绍（本目录）
 │   │   ├── index.md               #   总览（含脚本生成的仓库清单）
 │   │   └── *.md                   #   各项目详情页
-│   └── security/                  # 安全 QA 测试记录
+│   ├── security/                  # 安全 QA 测试记录
+│   ├── private-server/            # 《自己写私服》教程（含 appendix/）
+│   ├── kismet-sim/                # Kismet 直译模拟器专题
+│   ├── ue5-re/ ue5-bp/            # UE5 运行时逆向 / 蓝图逆向专题
+│   └── lab/                       # 杂项与随笔（术语表、工具箱、问答…）
 ├── scripts/sync-projects.mjs      # 从 GitHub 同步公开仓库清单
 └── package.json
 ```
@@ -66,3 +72,15 @@ npm run sync      # 重新生成「项目总览」里的公开仓库清单
 
 站点使用 VitePress 默认主题，未引入自定义主题或第三方 UI 依赖：Markdown + 内置容器（`::: tip` / `::: warning`）
 即可满足文档需求，构建产物纯静态、无运行时后端依赖。
+
+## 站内功能
+
+| 功能 | 说明 |
+|---|---|
+| 本地搜索 | VitePress 内置的 `local` provider，构建期生成索引，文案已中文化 |
+| 自定义 404 | `docs/404.md` 列出常用入口，替代默认英文提示 |
+| 每页大纲 | 默认显示 2–3 级标题；长页面（如项目总览）用 frontmatter `outline: [2, 2]` 收到二级 |
+| 最后更新时间 | 取 git 提交时间，由 `themeConfig.lastUpdated` 控制 |
+| 死链检查 | 构建期默认开启：站内链接或目录写错会直接让构建失败，等于免费的 lint |
+
+站点内容的组织方式与写作规范见[本站是怎么搭的](/lab/colophon)与[写作与取证约定](/lab/conventions)。

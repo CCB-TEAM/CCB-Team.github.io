@@ -57,6 +57,10 @@ features:
     details: 对 Kards 后台的一轮功能 QA 与安全测试：结论、方法、可复现步骤，以及离线复现的工具链。
     link: /security/
     linkText: 查看测试记录
+  - title: 杂项与随笔
+    details: 术语表、工具箱、按目标分流的阅读路径、常见问答、写作与取证约定，以及本站自己的搭建记录。
+    link: /lab/
+    linkText: 进站先看这里
 ---
 
 ## 快速入口
@@ -74,7 +78,8 @@ features:
 | 测试记录 | [安全 QA](/security/) —— 测试方法、上传与目录穿越、功能缺陷清单、镜像与回放工具 |
 | 自己写私服 | [系列教程](/private-server/) —— 从零实现 Kards 服务端（TS + C# 双语代码）：[协议取证](/private-server/01-discovery) · [会话](/private-server/03-session) · [codec](/private-server/04-codec) · [卡组码](/private-server/06-decks) · [匹配开局](/private-server/07-matchmaking) · [对局动作](/private-server/08-match-actions) · [WebSocket](/private-server/09-websocket) · [部署与兼容性坑](/private-server/10-deploy) |
 | 本站 | [CCB-Team.github.io](/projects/site) —— VitePress 站点源码与部署流程 |
-| 团队 | [团队介绍](/about/) —— 我们是谁、在做什么、成员分工与工作原则 |
+| 杂项 | [杂项与随笔](/lab/) —— [术语表](/lab/glossary) · [工具箱](/lab/toolbox) · [阅读路径](/lab/reading-path) · [问答](/lab/faq) · [写作约定](/lab/conventions) · [时间线](/lab/timeline) · [本站怎么搭的](/lab/colophon) |
+| 团队 | [团队介绍](/about/) —— 我们是谁、在做什么、工作方式与工程口味 |
 
 ## 组织仓库
 

@@ -16,6 +16,7 @@ export default defineConfig({
       { text: '模拟器', link: '/kismet-sim/', activeMatch: '^/kismet-sim/' },
       { text: 'UE5 逆向', link: '/ue5-re/', activeMatch: '^/ue5-re/' },
       { text: '蓝图逆向', link: '/ue5-bp/', activeMatch: '^/ue5-bp/' },
+      { text: '杂项', link: '/lab/', activeMatch: '^/lab/' },
       { text: '团队', link: '/about/', activeMatch: '^/about/' },
     ],
     sidebar: {
@@ -27,6 +28,32 @@ export default defineConfig({
             { text: '全部公开项目', link: '/projects/' },
             { text: '安全 QA', link: '/security/' },
             { text: '自己写私服', link: '/private-server/' },
+            { text: '杂项与随笔', link: '/lab/' },
+          ],
+        },
+      ],
+      '/lab/': [
+        {
+          text: '杂项与随笔',
+          items: [
+            { text: '总览', link: '/lab/' },
+            { text: '术语表', link: '/lab/glossary' },
+            { text: '工具箱', link: '/lab/toolbox' },
+            { text: '阅读路径', link: '/lab/reading-path' },
+            { text: '问答', link: '/lab/faq' },
+            { text: '写作与取证约定', link: '/lab/conventions' },
+            { text: '时间线', link: '/lab/timeline' },
+            { text: '本站是怎么搭的', link: '/lab/colophon' },
+            { text: '外部资源与致谢', link: '/lab/links' },
+          ],
+        },
+        {
+          text: '相关',
+          items: [
+            { text: '团队介绍', link: '/about/' },
+            { text: '项目总览', link: '/projects/' },
+            { text: 'UE5 运行时逆向', link: '/ue5-re/' },
+            { text: 'UE5 蓝图逆向', link: '/ue5-bp/' },
           ],
         },
       ],
@@ -299,5 +326,30 @@ export default defineConfig({
     returnToTopLabel: '回到顶部',
     docFooter: { prev: '上一篇', next: '下一篇' },
     lastUpdated: { text: '最后更新' },
+    socialLinks: [{ icon: 'github', link: 'https://github.com/CCB-TEAM' }],
+    search: {
+      provider: 'local',
+      options: {
+        translations: {
+          button: { buttonText: '搜索', buttonAriaLabel: '搜索文档' },
+          modal: {
+            noResultsText: '没有找到相关内容',
+            resetButtonTitle: '清除条件',
+            displayDetails: '显示详细列表',
+            footer: {
+              selectText: '选择',
+              navigateText: '切换',
+              closeText: '关闭',
+            },
+          },
+        },
+      },
+    },
+    notFound: {
+      title: '页面不存在',
+      quote: '这个链接大概是旧的、写错了，或者这一页还没写。',
+      linkLabel: '回到首页',
+      linkText: '回首页',
+    },
   },
 })
