@@ -51,7 +51,7 @@ dotnet fsi                               # F# 交互式（脚本 / 试验语法�
 | 语言核心 | [01 函数](/fsharp/01-functions) | 知道 F# 的函数是什么、怎么组合、为什么参数是空格分隔 |
 | | [02 数据](/fsharp/02-data) | 用记录、判别联合、`option` 把领域模型写成类型 |
 | | [03 模式匹配](/fsharp/03-pattern-matching) | 用 `match` 拆解所有类型，并知道什么时候编译器会报「不完整」 |
-| | [04 集合与管道](/fsharp/04-collections) | 分清 `list` / `array` / `seq`，用 `|>` 串起数据处理 |
+| | [04 集合与管道](/fsharp/04-collections) | 分清 `list` / `array` / `seq`，用管道运算符串起数据处理 |
 | | [05 模块与文件顺序](/fsharp/05-modules) | 组织命名空间与模块，理解为什么 `.fsproj` 的顺序不能乱 |
 | | [06 错误处理](/fsharp/06-errors) | 用 `Result` 表达可预期的失败，用异常表达程序错误 |
 | | [07 计算表达式](/fsharp/07-computation-expressions) | 读懂 `task { }` / `async { }`，并能自己写一个 builder |
